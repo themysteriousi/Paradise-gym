@@ -20,7 +20,7 @@ export default function AppShell({ children }: AppShellProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-brand-500/30 selection:text-white">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-brand-500/30 selection:text-white">
       <Header />
 
       {/* Sticky Offline / Sync Status Banner */}
@@ -64,7 +64,8 @@ export default function AppShell({ children }: AppShellProps) {
         </div>
       )}
 
-      <main className="flex-1 max-w-lg mx-auto w-full pt-[calc(3.75rem+env(safe-area-inset-top,0px))] pb-[calc(5rem+env(safe-area-inset-bottom,0px))] px-3.5 sm:px-4 gpu-layer">
+      {/* Main content container with ample bottom padding so fixed BottomNav never clips content */}
+      <main className="flex-1 max-w-lg mx-auto w-full pt-[calc(4rem+env(safe-area-inset-top,0px))] pb-[calc(7rem+env(safe-area-inset-bottom,0px))] px-3.5 sm:px-4">
         {children}
       </main>
       <BottomNav />

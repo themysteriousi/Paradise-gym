@@ -27,12 +27,11 @@ export default function BottomNav() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex flex-col items-center justify-center flex-1 py-1.5 px-1 rounded-2xl transition-all duration-100 min-h-[48px] tap-bounce ${
+              className={`flex flex-col items-center justify-center flex-1 py-1.5 px-1 rounded-2xl transition-all duration-100 min-h-[48px] tap-bounce select-none ${
                 isActive
                   ? 'text-brand-400 font-bold'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
-              aria-label={label}
             >
               <div
                 className={`p-1.5 rounded-xl transition-all duration-150 ${
