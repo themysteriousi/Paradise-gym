@@ -99,11 +99,13 @@ export default function MemberFormModal({ isOpen, onClose, onMemberCreated }: Me
               <Phone className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
               <input
                 type="tel"
+                inputMode="tel"
+                autoComplete="tel"
                 required
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="10-digit mobile"
-                className="w-full pl-9 pr-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500 tabular-nums"
               />
             </div>
           </div>

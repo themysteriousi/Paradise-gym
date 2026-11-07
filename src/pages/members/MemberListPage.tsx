@@ -14,6 +14,7 @@ export default function MemberListPage() {
   const currentGym = useAuthStore((s) => s.currentGym);
   const [members, setMembers] = useState<DbMember[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [loading, setLoading] = useState(true);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
@@ -21,20 +22,28 @@ export default function MemberListPage() {
   const [isQueueOpen, setIsQueueOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
 
+  // Debounce search query to keep typing at 60fps with zero lag
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const fetchMembers = useCallback(async () => {
     if (!currentGym) return;
     try {
       setLoading(true);
       const data = await memberService.getMembers({
         gymId: currentGym.id,
-        query: searchQuery,
+        query: debouncedQuery,
         status: statusFilter,
       });
       setMembers(data);
     } finally {
       setLoading(false);
     }
-  }, [currentGym, searchQuery, statusFilter]);
+  }, [currentGym, debouncedQuery, statusFilter]);
 
   useEffect(() => {
     fetchMembers();
@@ -132,7 +141,23 @@ export default function MemberListPage() {
       {/* Members List */}
       <div className="space-y-2">
         {loading ? (
-          <div className="p-8 text-center text-slate-500 text-xs">Loading members...</div>
+          <div className="space-y-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="bg-slate-900/60 border border-slate-800/60 p-3.5 rounded-2xl flex items-center justify-between animate-pulse"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-9 h-9 rounded-xl bg-slate-850" />
+                  <div className="space-y-1.5">
+                    <div className="w-32 h-3.5 bg-slate-800 rounded-md" />
+                    <div className="w-20 h-2.5 bg-slate-850 rounded-md" />
+                  </div>
+                </div>
+                <div className="w-14 h-5 bg-slate-800 rounded-md" />
+              </div>
+            ))}
+          </div>
         ) : members.length === 0 ? (
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center space-y-2">
             <p className="text-sm font-bold text-slate-200">No members found</p>

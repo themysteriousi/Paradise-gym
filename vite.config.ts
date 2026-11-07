@@ -44,6 +44,23 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src')
     }
   },
+  build: {
+    target: 'es2020',
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-icons': ['lucide-react'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-zxing': ['@zxing/browser', '@zxing/library'],
+          'vendor-html2canvas': ['html2canvas'],
+          'vendor-qrcode': ['qrcode'],
+          'vendor-idb': ['idb'],
+        },
+      },
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',

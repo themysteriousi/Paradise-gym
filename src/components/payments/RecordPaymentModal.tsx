@@ -223,10 +223,11 @@ export default function RecordPaymentModal({
               <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold">₹</span>
               <input
                 type="number"
+                inputMode="decimal"
                 value={amountRupees}
                 onChange={(e) => setAmountRupees(e.target.value)}
                 placeholder="1500"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2.5 text-base font-bold text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3.5 py-2.5 text-base font-bold text-white focus:outline-none focus:ring-2 focus:ring-brand-500 tabular-nums"
                 min="1"
                 required
               />
