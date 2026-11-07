@@ -1,6 +1,7 @@
 import AuthGuard from '@/components/auth/AuthGuard';
 import AppShell from '@/components/layout/AppShell';
 import { useUiStore } from '@/stores/uiStore';
+import MemberListPage from '@/pages/members/MemberListPage';
 import { Users, QrCode, CreditCard, Settings, TrendingUp } from 'lucide-react';
 
 function DashboardView() {
@@ -58,7 +59,7 @@ function MainContent() {
     case 'dashboard':
       return <DashboardView />;
     case 'members':
-      return <PlaceholderView title="Member Management" icon={Users} />;
+      return <MemberListPage />;
     case 'attendance':
       return <PlaceholderView title="QR Attendance Scanner" icon={QrCode} />;
     case 'payments':
