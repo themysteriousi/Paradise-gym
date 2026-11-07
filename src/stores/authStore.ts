@@ -13,11 +13,11 @@ interface AuthState {
 }
 
 const DEMO_GYM: DbGym = {
-  id: 'demo-gym-001',
-  name: 'Paradise Gym (Demo)',
+  id: '00000000-0000-0000-0000-000000000001',
+  name: 'Paradise Gym',
   address: '123 Fitness Street, Near Civil Lines',
   phone: '9876543210',
-  email: 'contact@paradisegym.demo',
+  email: 'contact@paradisegym.com',
   gst_number: null,
   logo_url: null,
   timezone: 'Asia/Kolkata',

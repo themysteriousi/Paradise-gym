@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Dumbbell, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
+import { useDemoStore } from '@/stores/demoStore';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 export default function LoginPage() {
@@ -11,6 +12,11 @@ export default function LoginPage() {
 
   const enableDemoMode = useAuthStore((s) => s.enableDemoMode);
   const setPartner = useAuthStore((s) => s.setPartner);
+
+  const handleDemoAccess = () => {
+    useDemoStore.getState().resetToDefault();
+    enableDemoMode();
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +48,28 @@ export default function LoginPage() {
         throw new Error('No partner account found for this user.');
       }
 
-      setPartner(partner);
+      // Fetch gym details linked to partner
+      const { data: gymRecord } = await supabase
+        .from('gym')
+        .select('*')
+        .eq('id', partner.gym_id)
+        .single();
+
+      // Clear demo mock data when logging into real live database
+      useDemoStore.getState().clearForLiveMode();
+
+      setPartner(partner, gymRecord || {
+        id: partner.gym_id,
+        name: 'Paradise Gym',
+        address: null,
+        phone: null,
+        email: null,
+        gst_number: null,
+        logo_url: null,
+        timezone: 'Asia/Kolkata',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
     } catch (err: unknown) {
       setErrorMsg(err instanceof Error ? err.message : 'Login failed. Please check credentials.');
     } finally {
@@ -123,7 +150,7 @@ export default function LoginPage() {
           {/* Instant Demo Button */}
           <button
             type="button"
-            onClick={enableDemoMode}
+            onClick={handleDemoAccess}
             className="w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700/80 font-medium text-xs rounded-xl transition flex items-center justify-center space-x-2 active:scale-[0.98]"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />

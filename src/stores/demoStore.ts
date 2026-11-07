@@ -41,6 +41,7 @@ interface DemoState {
   addClosure: (closure: DbGymClosure) => void;
   addExtension: (extension: DbMembershipExtension) => void;
   resetToDefault: () => void;
+  clearForLiveMode: () => void;
 }
 
 const initialData = generateDemoDataset();
@@ -136,6 +137,22 @@ export const useDemoStore = create<DemoState>((set) => ({
       partnerTransactions: [],
       qrTokens: [],
       attendance: refreshed.attendance,
+      closures: [],
+      extensions: [],
+    });
+  },
+
+  clearForLiveMode: () => {
+    set({
+      members: [],
+      memberships: [],
+      plans: [],
+      payments: [],
+      refunds: [],
+      expenses: [],
+      partnerTransactions: [],
+      qrTokens: [],
+      attendance: [],
       closures: [],
       extensions: [],
     });
