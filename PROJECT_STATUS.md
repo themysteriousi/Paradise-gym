@@ -1,9 +1,9 @@
 # 📊 Paradise Gym Management PWA — Master Project Status
 
 > **Notice:** This document is the **Single Source of Truth** for project progress, environment configuration, active tasks, and handoff instructions across platforms and agent sessions.  
-> **Last Updated:** 2026-11-07T18:00:00+05:30  
+> **Last Updated:** 2026-11-07T18:02:45+05:30  
 > **Current Phase:** Phase 5 — Operational Dashboard & WhatsApp Engine  
-> **Active Task:** Task 5.1 — High-Density Operational Dashboard
+> **Active Task:** Task 5.2 — Automated WhatsApp Template Engine & Direct Deep-Links
 
 ---
 
@@ -26,7 +26,7 @@
 | **Phase 2** | Member & Membership Lifecycle (CRUD, Queue, Plans, Renewals, Cards, CSV Import) | ✅ Completed | 100% |
 | **Phase 3** | Financial Management & Payments (Split, FIFO, Refunds, Expenses, Capital, P&L) | ✅ Completed | 100% |
 | **Phase 4** | QR Attendance & Resilient Offline Sync (QR tokens, Scanner, IndexedDB, Auto-sync) | ✅ Completed | 100% |
-| **Phase 5** | Operational Dashboard & WhatsApp Engine (Metrics, Templates, Closures) | 🔄 In Progress | 0% |
+| **Phase 5** | Operational Dashboard & WhatsApp Engine (Metrics, Templates, Closures) | 🔄 In Progress | 33% |
 | **Phase 6** | Data Export, Help Guides & Release (Exports, Docs, Playwright E2E, Security) | ⏳ Pending | 0% |
 
 ---
@@ -74,11 +74,17 @@
   - Local IndexedDB storage, offline badge, retry engine with conflict resolution
   - `indexedDB.ts`, `offlineSyncService.ts`, `offlineStore.ts`
 
-### Phase 5: Operational Dashboard & WhatsApp Engine (Active - 0%)
-- [ ] **Task 5.1: High-Density Operational Dashboard**
+### Phase 5: Operational Dashboard & WhatsApp Engine (Active - 33%)
+- [x] **Task 5.1: High-Density Operational Dashboard**
   - Live morning-to-night KPI cards: Today Check-ins, Active Members, Today's Collections, Overdue Dues
   - Recent activity feed, quick action shortcuts
   - `DashboardPage.tsx`, `MetricCard.tsx`, `dashboardService.ts`
+- [ ] **Task 5.2: Automated WhatsApp Template Engine & Direct Deep-Links**
+  - Standardized templates: Welcome, Expiry (7d, 3d, today), Overdue, Payment Receipt
+  - `WhatsAppShareModal.tsx`, `whatsappTemplateService.ts`
+- [ ] **Task 5.3: Gym Closures & Auto-Extension Engine**
+  - Maintenance/Holiday closure recording, automatic membership expiry extension by closure duration
+  - `ClosuresPage.tsx`, `closureService.ts`
 - [ ] **Task 5.2: Automated WhatsApp Template Engine & Direct Deep-Links**
   - Standardized templates: Welcome, Expiry (7d, 3d, today), Overdue, Payment Receipt
   - `WhatsAppShareModal.tsx`, `whatsappTemplateService.ts`
