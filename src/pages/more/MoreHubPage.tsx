@@ -4,6 +4,8 @@ import ExpensesPage from './ExpensesPage';
 import PartnerFinancesPage from './PartnerFinancesPage';
 import PlanSettingsPage from './PlanSettingsPage';
 import ClosuresPage from './ClosuresPage';
+import ExportsPage from './ExportsPage';
+import HelpPage from './HelpPage';
 import RegistrationQueuePage from '@/pages/members/RegistrationQueuePage';
 import MemberImportPage from '@/pages/members/MemberImportPage';
 import {
@@ -14,6 +16,8 @@ import {
   CalendarOff,
   UserCheck,
   UploadCloud,
+  DownloadCloud,
+  HelpCircle,
   ChevronRight,
   ArrowLeft,
 } from 'lucide-react';
@@ -25,6 +29,8 @@ type SubView =
   | 'partner-finances'
   | 'plans'
   | 'closures'
+  | 'exports'
+  | 'help'
   | 'queue'
   | 'import';
 
@@ -47,6 +53,8 @@ export default function MoreHubPage() {
         {subView === 'partner-finances' && <PartnerFinancesPage />}
         {subView === 'plans' && <PlanSettingsPage />}
         {subView === 'closures' && <ClosuresPage />}
+        {subView === 'exports' && <ExportsPage />}
+        {subView === 'help' && <HelpPage />}
         {subView === 'queue' && <RegistrationQueuePage onBack={() => setSubView('menu')} />}
         {subView === 'import' && (
           <MemberImportPage
@@ -107,6 +115,20 @@ export default function MoreHubPage() {
       desc: 'Bulk import member lists with preview and validation',
       icon: UploadCloud,
       color: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
+    },
+    {
+      id: 'exports' as const,
+      title: 'Business Data Export & Backups',
+      desc: '1-tap download of all spreadsheets (CSV) and full JSON database backups',
+      icon: DownloadCloud,
+      color: 'text-brand-400 bg-brand-500/10 border-brand-500/20',
+    },
+    {
+      id: 'help' as const,
+      title: 'Help Guides & Operations Runbook',
+      desc: 'Step-by-step partner instructions, offline routines, and cash reconciliation',
+      icon: HelpCircle,
+      color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
     },
   ];
 
