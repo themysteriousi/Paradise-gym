@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { useDemoStore } from '@/stores/demoStore';
-import type { DbPayment, PaymentMethod } from '@/types/database';
+import type { DbPayment, DbRefund, PaymentMethod } from '@/types/database';
 
 export interface OutstandingCharge {
   id: string;
@@ -301,4 +301,206 @@ export async function getPayments(gymId: string): Promise<DbPayment[]> {
 
   if (error) throw error;
   return data || [];
+}
+
+export interface ProcessRefundInput {
+  gym_id: string;
+  payment_id: string;
+  processed_by: string;
+  amount_paise: number;
+  method: PaymentMethod;
+  reason: string;
+  reference?: string | null;
+}
+
+export interface CorrectPaymentInput {
+  payment_id: string;
+  corrected_by: string;
+  reason: string;
+  new_method: PaymentMethod;
+  new_amount_paise: number;
+  new_reference?: string | null;
+  new_note?: string | null;
+}
+
+/**
+ * Get refunds recorded for a specific payment
+ */
+export function getRefundsForPayment(paymentId: string): DbRefund[] {
+  return useDemoStore.getState().refunds.filter((r) => r.payment_id === paymentId);
+}
+
+/**
+ * Process a refund non-destructively:
+ * Creates a DbRefund record without mutating original payment record.
+ */
+export async function processRefund(
+  input: ProcessRefundInput
+): Promise<{ success: boolean; refundId?: string; error?: string }> {
+  if (!input.reason || !input.reason.trim()) {
+    return { success: false, error: 'Reason is required for refund processing' };
+  }
+
+  if (input.amount_paise <= 0) {
+    return { success: false, error: 'Refund amount must be greater than zero' };
+  }
+
+  const isDemoMode = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder');
+
+  if (isDemoMode) {
+    const demoStore = useDemoStore.getState();
+    const originalPayment = demoStore.payments.find((p) => p.id === input.payment_id);
+    if (!originalPayment) {
+      return { success: false, error: 'Original payment record not found' };
+    }
+
+    // Check existing refunds for this payment
+    const existingRefunds = demoStore.refunds.filter((r) => r.payment_id === input.payment_id);
+    const totalRefundedSoFar = existingRefunds.reduce((sum, r) => sum + r.amount_paise, 0);
+
+    if (totalRefundedSoFar + input.amount_paise > originalPayment.amount_paise) {
+      return {
+        success: false,
+        error: `Refund amount cannot exceed original payment (${formatRupees(originalPayment.amount_paise)})`,
+      };
+    }
+
+    const refundRecord: DbRefund = {
+      id: `refund-${Date.now()}`,
+      gym_id: input.gym_id,
+      payment_id: input.payment_id,
+      processed_by: input.processed_by,
+      amount_paise: input.amount_paise,
+      method: input.method,
+      reason: input.reason.trim(),
+      reference: input.reference || null,
+      refunded_at: new Date().toISOString(),
+    };
+
+    demoStore.addRefund(refundRecord);
+    return { success: true, refundId: refundRecord.id };
+  }
+
+  try {
+    const { data, error } = await supabase.from('refunds').insert({
+      gym_id: input.gym_id,
+      payment_id: input.payment_id,
+      processed_by: input.processed_by,
+      amount_paise: input.amount_paise,
+      method: input.method,
+      reason: input.reason.trim(),
+      reference: input.reference || null,
+      refunded_at: new Date().toISOString(),
+    }).select('id').single();
+
+    if (error) throw error;
+    return { success: true, refundId: data.id };
+  } catch (err: unknown) {
+    return { success: false, error: err instanceof Error ? err.message : 'Failed to process refund' };
+  }
+}
+
+/**
+ * Correct an erroneous payment entry:
+ * Flags the original record as superseded/refunded with an audit reason,
+ * and creates a new corrected payment linked to original_id.
+ */
+export async function correctPayment(
+  input: CorrectPaymentInput
+): Promise<{ success: boolean; newPaymentId?: string; error?: string }> {
+  if (!input.reason || !input.reason.trim()) {
+    return { success: false, error: 'Audit reason is mandatory for clerical corrections' };
+  }
+
+  if (input.new_amount_paise <= 0) {
+    return { success: false, error: 'Corrected payment amount must be greater than zero' };
+  }
+
+  const isDemoMode = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder');
+
+  if (isDemoMode) {
+    const demoStore = useDemoStore.getState();
+    const original = demoStore.payments.find((p) => p.id === input.payment_id);
+    if (!original) {
+      return { success: false, error: 'Original payment record not found' };
+    }
+
+    const now = new Date().toISOString();
+
+    // 1. Mark original as corrected / superseded
+    demoStore.updatePayment(original.id, {
+      is_correction: true,
+      status: 'refunded',
+      corrected_by: input.corrected_by,
+      corrected_at: now,
+      correction_reason: input.reason.trim(),
+    });
+
+    // 2. Create new corrected payment record
+    const newRecord: DbPayment = {
+      id: `demo-pay-corrected-${Date.now()}`,
+      gym_id: original.gym_id,
+      member_id: original.member_id,
+      received_by: original.received_by,
+      method: input.new_method,
+      amount_paise: input.new_amount_paise,
+      status: 'completed',
+      reference: input.new_reference || original.reference,
+      note: input.new_note ? `[Corrected] ${input.new_note}` : `[Correction for payment ${original.id}]`,
+      paid_at: original.paid_at,
+      is_correction: false,
+      original_id: original.id,
+      corrected_by: null,
+      corrected_at: null,
+      correction_reason: null,
+      created_at: now,
+    };
+
+    demoStore.recordPayment(newRecord);
+    return { success: true, newPaymentId: newRecord.id };
+  }
+
+  try {
+    const now = new Date().toISOString();
+
+    // 1. Update original
+    const { data: orig, error: origError } = await supabase
+      .from('payments')
+      .update({
+        is_correction: true,
+        status: 'refunded',
+        corrected_by: input.corrected_by,
+        corrected_at: now,
+        correction_reason: input.reason.trim(),
+      })
+      .eq('id', input.payment_id)
+      .select('*')
+      .single();
+
+    if (origError || !orig) throw origError || new Error('Original payment not found');
+
+    // 2. Insert corrected record
+    const { data: newPay, error: newPayError } = await supabase
+      .from('payments')
+      .insert({
+        gym_id: orig.gym_id,
+        member_id: orig.member_id,
+        received_by: orig.received_by,
+        method: input.new_method,
+        amount_paise: input.new_amount_paise,
+        status: 'completed',
+        reference: input.new_reference || orig.reference,
+        note: input.new_note ? `[Corrected] ${input.new_note}` : `[Correction for payment ${orig.id}]`,
+        paid_at: orig.paid_at,
+        original_id: orig.id,
+        created_at: now,
+      })
+      .select('id')
+      .single();
+
+    if (newPayError) throw newPayError;
+    return { success: true, newPaymentId: newPay.id };
+  } catch (err: unknown) {
+    return { success: false, error: err instanceof Error ? err.message : 'Failed to correct payment' };
+  }
 }

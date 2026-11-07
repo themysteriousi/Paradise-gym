@@ -3,6 +3,8 @@ import { useDemoStore } from '@/stores/demoStore';
 import { formatRupees, getPaymentSummary } from '@/services/paymentService';
 import type { DbPayment } from '@/types/database';
 import RecordPaymentModal from '@/components/payments/RecordPaymentModal';
+import RefundModal from '@/components/payments/RefundModal';
+import CorrectionModal from '@/components/payments/CorrectionModal';
 import {
   Plus,
   Search,
@@ -34,6 +36,8 @@ export default function PaymentListPage({
   const [methodFilter, setMethodFilter] = useState<'all' | 'cash' | 'upi' | 'card'>('all');
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
   const [selectedReceipt, setSelectedReceipt] = useState<DbPayment | null>(null);
+  const [refundPayment, setRefundPayment] = useState<DbPayment | null>(null);
+  const [correctionPayment, setCorrectionPayment] = useState<DbPayment | null>(null);
 
   // Compute member lookup map for O(1) details
   const memberMap = useMemo(() => {
@@ -275,24 +279,20 @@ export default function PaymentListPage({
                       <Receipt className="w-3.5 h-3.5" />
                       <span className="text-[11px]">Receipt</span>
                     </button>
-                    {onOpenCorrection && (
-                      <button
-                        onClick={() => onOpenCorrection(p)}
-                        className="p-1 text-slate-400 hover:text-amber-400 rounded-lg hover:bg-slate-800"
-                        title="Correct Entry"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                    {onOpenRefund && (
-                      <button
-                        onClick={() => onOpenRefund(p)}
-                        className="p-1 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800"
-                        title="Issue Refund"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                      </button>
-                    )}
+                    <button
+                      onClick={() => (onOpenCorrection ? onOpenCorrection(p) : setCorrectionPayment(p))}
+                      className="p-1 text-slate-400 hover:text-amber-400 rounded-lg hover:bg-slate-800"
+                      title="Correct Entry"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => (onOpenRefund ? onOpenRefund(p) : setRefundPayment(p))}
+                      className="p-1 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800"
+                      title="Issue Refund"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -306,6 +306,22 @@ export default function PaymentListPage({
         isOpen={isRecordModalOpen}
         onClose={() => setIsRecordModalOpen(false)}
         onSuccess={() => setIsRecordModalOpen(false)}
+      />
+
+      {/* Refund Modal */}
+      <RefundModal
+        isOpen={!!refundPayment}
+        payment={refundPayment}
+        onClose={() => setRefundPayment(null)}
+        onSuccess={() => setRefundPayment(null)}
+      />
+
+      {/* Correction Modal */}
+      <CorrectionModal
+        isOpen={!!correctionPayment}
+        payment={correctionPayment}
+        onClose={() => setCorrectionPayment(null)}
+        onSuccess={() => setCorrectionPayment(null)}
       />
 
       {/* Digital Receipt Modal */}
