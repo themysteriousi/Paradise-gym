@@ -19,7 +19,7 @@ describe('Paradise Gym App Root & Auth Flow', () => {
     const demoButton = screen.getByRole('button', { name: /Launch Instant Demo Mode/i });
     fireEvent.click(demoButton);
 
-    expect(screen.getByText(/Today's Operations/i)).toBeInTheDocument();
+    expect(screen.getByText(/Paradise Gym Operations/i)).toBeInTheDocument();
     expect(screen.getAllByText(/DEMO/i).length).toBeGreaterThan(0);
   });
 });
