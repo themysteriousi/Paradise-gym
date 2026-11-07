@@ -1,5 +1,13 @@
 import { create } from 'zustand';
-import type { DbMember, DbMembershipPlan, DbPayment, DbAttendance, DbRefund } from '@/types/database';
+import type {
+  DbMember,
+  DbMembershipPlan,
+  DbPayment,
+  DbAttendance,
+  DbRefund,
+  DbExpense,
+  DbPartnerTransaction,
+} from '@/types/database';
 import { generateDemoDataset } from '@/services/demoDataService';
 
 interface DemoState {
@@ -7,12 +15,16 @@ interface DemoState {
   plans: DbMembershipPlan[];
   payments: DbPayment[];
   refunds: DbRefund[];
+  expenses: DbExpense[];
+  partnerTransactions: DbPartnerTransaction[];
   attendance: DbAttendance[];
   addMember: (member: DbMember) => void;
   recordAttendance: (attendance: DbAttendance) => void;
   recordPayment: (payment: DbPayment) => void;
   updatePayment: (id: string, updates: Partial<DbPayment>) => void;
   addRefund: (refund: DbRefund) => void;
+  addExpense: (expense: DbExpense) => void;
+  addPartnerTransaction: (tx: DbPartnerTransaction) => void;
   resetToDefault: () => void;
 }
 
@@ -23,6 +35,8 @@ export const useDemoStore = create<DemoState>((set) => ({
   plans: initialData.plans,
   payments: initialData.payments,
   refunds: [],
+  expenses: [],
+  partnerTransactions: [],
   attendance: initialData.attendance,
 
   addMember: (member) =>
@@ -42,6 +56,12 @@ export const useDemoStore = create<DemoState>((set) => ({
   addRefund: (refund) =>
     set((state) => ({ refunds: [refund, ...state.refunds] })),
 
+  addExpense: (expense) =>
+    set((state) => ({ expenses: [expense, ...state.expenses] })),
+
+  addPartnerTransaction: (tx) =>
+    set((state) => ({ partnerTransactions: [tx, ...state.partnerTransactions] })),
+
   resetToDefault: () => {
     const refreshed = generateDemoDataset();
     set({
@@ -49,6 +69,8 @@ export const useDemoStore = create<DemoState>((set) => ({
       plans: refreshed.plans,
       payments: refreshed.payments,
       refunds: [],
+      expenses: [],
+      partnerTransactions: [],
       attendance: refreshed.attendance,
     });
   },
