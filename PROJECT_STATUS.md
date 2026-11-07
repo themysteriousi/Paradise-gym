@@ -1,9 +1,9 @@
 # 📊 Paradise Gym Management PWA — Master Project Status
 
 > **Notice:** This document is the **Single Source of Truth** for project progress, environment configuration, active tasks, and handoff instructions across platforms and agent sessions.  
-> **Last Updated:** 2026-11-07T17:35:00+05:30  
-> **Current Phase:** Phase 3 — Financial Management & Payments  
-> **Active Task:** Task 3.4 — Financial Reporting & Estimated Profit
+> **Last Updated:** 2026-11-07T17:46:00+05:30  
+> **Current Phase:** Phase 4 — QR Attendance & Resilient Offline Sync  
+> **Active Task:** Task 4.1 — Secure QR Token Generation & Revocation
 
 ---
 
@@ -24,8 +24,8 @@
 |---|---|---|---|
 | **Phase 1** | Foundation & Project Shell (Vite, PWA, Supabase, Auth, Navigation, Setup, Demo) | ✅ Completed | 100% |
 | **Phase 2** | Member & Membership Lifecycle (CRUD, Queue, Plans, Renewals, Cards, CSV Import) | ✅ Completed | 100% |
-| **Phase 3** | Financial Management & Payments (Split, FIFO, Refunds, Expenses, Capital, P&L) | 🔄 In Progress | 75% |
-| **Phase 4** | QR Attendance & Resilient Offline Sync (QR tokens, Scanner, IndexedDB, Auto-sync) | ⏳ Pending | 0% |
+| **Phase 3** | Financial Management & Payments (Split, FIFO, Refunds, Expenses, Capital, P&L) | ✅ Completed | 100% |
+| **Phase 4** | QR Attendance & Resilient Offline Sync (QR tokens, Scanner, IndexedDB, Auto-sync) | 🔄 In Progress | 0% |
 | **Phase 5** | Operational Dashboard & WhatsApp Engine (Metrics, Templates, Closures) | ⏳ Pending | 0% |
 | **Phase 6** | Data Export, Help Guides & Release (Exports, Docs, Playwright E2E, Security) | ⏳ Pending | 0% |
 
@@ -48,7 +48,7 @@
 - [x] **Task 2.4: Digital Membership Card & WhatsApp Share Generator**
 - [x] **Task 2.5: CSV/Excel Member Import with Preview & Validation**
 
-### Phase 3: Financial Management & Payments (Active - 75%)
+### Phase 3: Financial Management & Payments (100% Complete)
 - [x] **Task 3.1: Payment Recording, Split Payments & FIFO Allocation**
   - `paymentService.ts` (FIFO charge allocation, split methods, paise precision)
   - `PaymentListPage.tsx` (Summary cards, date & method filters, receipt modal)
@@ -59,9 +59,20 @@
 - [x] **Task 3.3: Expense Tracking & Partner Transactions (Capital/Draws)**
   - `expenseService.ts` (operating expenses vs partner capital withdrawals)
   - `ExpensesPage.tsx` & `PartnerFinancesPage.tsx`
-- [ ] **Task 3.4: Financial Reporting & Estimated Profit**
+- [x] **Task 3.4: Financial Reporting & Estimated Profit**
   - Monthly P&L statement (Collections - Operating Expenses = Estimated Profit)
-  - `FinancialReportsPage.tsx`
+  - `FinancialReportsPage.tsx` & `MoreHubPage.tsx`
+
+### Phase 4: QR Attendance & Resilient Offline Sync (Active - 0%)
+- [ ] **Task 4.1: Secure QR Token Generation & Revocation**
+  - Non-PII secure random token generator, expiration & instant revocation
+  - `qrService.ts` & `tests/unit/qrService.test.ts`
+- [ ] **Task 4.2: Camera QR Scanner & Manual Fallback Check-In**
+  - Device camera barcode reader with ZXing, manual member search fallback, sound feedback
+  - `CameraScanner.tsx`, `AttendancePage.tsx`, `CheckInResultModal.tsx`
+- [ ] **Task 4.3: IndexedDB Offline Queue & Auto-Sync Engine**
+  - Local IndexedDB storage, offline badge, retry engine with conflict resolution
+  - `indexedDB.ts`, `offlineSyncService.ts`, `offlineStore.ts`
 - [ ] **Task 3.3: Expense Tracking & Partner Transactions (Capital/Draws)**
   - `expenseService.ts` (operating expenses vs partner capital withdrawals)
   - `ExpensesPage.tsx` & `PartnerFinancesPage.tsx`
