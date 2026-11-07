@@ -1,9 +1,9 @@
 # 📊 Paradise Gym Management PWA — Master Project Status
 
 > **Notice:** This document is the **Single Source of Truth** for project progress, environment configuration, active tasks, and handoff instructions across platforms and agent sessions.  
-> **Last Updated:** 2026-11-07T16:58:00+05:30  
+> **Last Updated:** 2026-11-07T17:06:00+05:30  
 > **Current Phase:** Phase 2 — Member & Membership Lifecycle  
-> **Active Task:** Task 2.2 — Public Self-Registration Portal & Approval Queue
+> **Active Task:** Task 2.3 — Membership Plans, Pricing & Renewal Logic
 
 ---
 
@@ -23,7 +23,7 @@
 | Phase | Description | Status | Progress |
 |---|---|---|---|
 | **Phase 1** | Foundation & Project Shell (Vite, PWA, Supabase, Auth, Navigation, Setup, Demo) | ✅ Completed | 100% |
-| **Phase 2** | Member & Membership Lifecycle (CRUD, Queue, Plans, Renewals, Cards, CSV Import) | 🔄 In Progress | 25% |
+| **Phase 2** | Member & Membership Lifecycle (CRUD, Queue, Plans, Renewals, Cards, CSV Import) | 🔄 In Progress | 50% |
 | **Phase 3** | Financial Management & Payments (Split, FIFO, Refunds, Expenses, Capital, P&L) | ⏳ Pending | 0% |
 | **Phase 4** | QR Attendance & Resilient Offline Sync (QR tokens, Scanner, IndexedDB, Auto-sync) | ⏳ Pending | 0% |
 | **Phase 5** | Operational Dashboard & WhatsApp Engine (Metrics, Templates, Closures) | ⏳ Pending | 0% |
@@ -64,7 +64,7 @@
   - `MemberListPage.tsx` (Search by name/mobile/ID, status tabs, tags)
   - `MemberDetailPage.tsx` (Status, history, attendance, payments)
   - `MemberFormModal.tsx`
-- [ ] **Task 2.2: Public Self-Registration Portal & Approval Queue**
+- [x] **Task 2.2: Public Self-Registration Portal & Approval Queue**
   - Public `RegisterPage.tsx`
   - Partner approval queue `RegistrationQueuePage.tsx`
 - [ ] **Task 2.3: Membership Plans, Pricing & Renewal Logic**
