@@ -4,6 +4,7 @@ import type { DbMember } from '@/types/database';
 import { memberService } from '@/services/memberService';
 import { useAuthStore } from '@/stores/authStore';
 import RenewalModal from '@/components/memberships/RenewalModal';
+import DigitalCard from '@/components/members/DigitalCard';
 
 interface MemberDetailPageProps {
   memberId: string;
@@ -14,6 +15,7 @@ export default function MemberDetailPage({ memberId, onBack }: MemberDetailPageP
   const [member, setMember] = useState<DbMember | null>(null);
   const [loading, setLoading] = useState(true);
   const [isRenewalOpen, setIsRenewalOpen] = useState(false);
+  const [isCardOpen, setIsCardOpen] = useState(false);
   const currentPartner = useAuthStore((s) => s.currentPartner);
 
   const loadMember = useCallback(async () => {
@@ -161,7 +163,7 @@ export default function MemberDetailPage({ memberId, onBack }: MemberDetailPageP
           <span>Renew Plan</span>
         </button>
         <button
-          onClick={() => alert(`Digital membership card generation will be triggered in Task 2.4`)}
+          onClick={() => setIsCardOpen(true)}
           className="py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 font-semibold text-xs rounded-xl flex items-center justify-center space-x-1.5 active:scale-[0.98] transition"
         >
           <Sparkles className="w-4 h-4 text-amber-400" />
@@ -174,6 +176,12 @@ export default function MemberDetailPage({ memberId, onBack }: MemberDetailPageP
         isOpen={isRenewalOpen}
         onClose={() => setIsRenewalOpen(false)}
         onRenewed={loadMember}
+      />
+
+      <DigitalCard
+        member={member}
+        isOpen={isCardOpen}
+        onClose={() => setIsCardOpen(false)}
       />
     </div>
   );
