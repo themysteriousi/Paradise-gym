@@ -90,3 +90,4 @@ describe('Attendance Service & Check-In Workflow', () => {
     expect(result.statusWarning).toBeDefined();
   });
 });
+

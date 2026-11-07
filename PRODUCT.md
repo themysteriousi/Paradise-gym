@@ -67,3 +67,4 @@ A lightweight, zero-subscription gym management PWA engineered for independent I
 - Large touch targets (minimum 44x44px, ideally 48px) for quick reception desk tapping.
 - Dual-mode check-in (camera barcode scanner accompanied by instant manual name/phone search fallback for members without smartphones).
 - Multilingual-ready design (phone numbers normalized to E.164 standard, currency formatted according to Indian numbering system: ₹1,50,000).
+

@@ -108,3 +108,4 @@ If Supabase credentials (`SUPABASE_ANON_KEY`) are ever exposed:
    - `VITE_SUPABASE_ANON_KEY`
 4. Trigger an immediate deployment in Cloudflare Pages.
 5. All connected client PWA service workers will automatically update on next reload.
+

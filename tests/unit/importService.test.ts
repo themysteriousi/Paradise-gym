@@ -71,3 +71,4 @@ New Member,9876543210`;
     expect(members.some((m) => m.full_name === 'Batch Member Two')).toBe(true);
   });
 });
+

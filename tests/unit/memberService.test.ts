@@ -71,3 +71,4 @@ describe('Member Service (CRUD & Search)', () => {
     expect(fetched?.archived_by).toBe('demo-partner-001');
   });
 });
+

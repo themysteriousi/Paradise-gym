@@ -204,3 +204,4 @@ export function getTodaysAttendanceLog(): DbAttendance[] {
         new Date(b.checked_in_at).getTime() - new Date(a.checked_in_at).getTime()
     );
 }
+

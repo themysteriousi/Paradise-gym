@@ -96,3 +96,4 @@ describe('Secure Non-PII QR Token Service', () => {
     expect(check.error).toContain('Invalid or unrecognized');
   });
 });
+

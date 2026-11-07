@@ -134,3 +134,4 @@ export function generateWhatsAppUrl(phone: string, text: string): string {
   const encoded = encodeURIComponent(text);
   return `https://wa.me/${cleanPhone}?text=${encoded}`;
 }
+

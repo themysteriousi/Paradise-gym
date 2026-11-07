@@ -34,3 +34,4 @@ export const cardGeneratorService = {
     return dataUrl;
   },
 };
+

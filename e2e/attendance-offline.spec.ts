@@ -23,3 +23,4 @@ test.describe('Attendance & Scanner Journey', () => {
     await expect(page.getByText(/Aarav Sharma/i).first()).toBeVisible();
   });
 });
+

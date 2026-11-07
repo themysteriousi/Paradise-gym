@@ -190,3 +190,4 @@ export default function RegisterPage({ gymId = 'demo-gym-001', onSuccess }: Regi
     </div>
   );
 }
+

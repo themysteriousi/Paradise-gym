@@ -186,3 +186,4 @@ Neha Verma,9876543211,neha@example.com,female,1998-10-20,Strength focus`;
     </div>
   );
 }
+

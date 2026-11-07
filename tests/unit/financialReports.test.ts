@@ -170,3 +170,4 @@ describe('Financial Reporting & P&L Service', () => {
     expect(breakdown.cash.percentage).toBe(40);
   });
 });
+

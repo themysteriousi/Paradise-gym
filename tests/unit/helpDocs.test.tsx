@@ -21,3 +21,4 @@ describe('HelpPage Component', () => {
     expect(screen.getByText(/New members can register themselves by scanning/i)).toBeInTheDocument();
   });
 });
+

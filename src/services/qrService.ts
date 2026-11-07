@@ -240,3 +240,4 @@ export async function revokeQrToken(
   if (error) return { success: false, error: error.message };
   return { success: true };
 }
+

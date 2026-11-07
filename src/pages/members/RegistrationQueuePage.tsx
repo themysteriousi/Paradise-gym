@@ -145,3 +145,4 @@ export default function RegistrationQueuePage({ onBack, onMemberApproved }: Regi
     </div>
   );
 }
+

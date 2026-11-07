@@ -366,3 +366,4 @@ export async function exportFullDatabaseJson(gymId: string): Promise<void> {
     'application/json;charset=utf-8;'
   );
 }
+

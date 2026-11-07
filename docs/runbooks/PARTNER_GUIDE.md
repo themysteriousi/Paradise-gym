@@ -74,3 +74,4 @@
    - Check **"Automatically extend active memberships"**.
    - Tap **Confirm Closure**.
 4. All active members automatically get extra days added to their membership expiry, keeping members happy and relationships strong!
+

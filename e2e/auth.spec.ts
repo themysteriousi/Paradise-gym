@@ -18,3 +18,4 @@ test.describe('Authentication & Dashboard Journey', () => {
     await expect(page.getByRole('button', { name: /Payments/i })).toBeVisible();
   });
 });
+

@@ -26,3 +26,4 @@ test.describe('Payments & Collections Journey', () => {
     await expect(page.getByRole('button', { name: /Split/i })).toBeVisible();
   });
 });
+

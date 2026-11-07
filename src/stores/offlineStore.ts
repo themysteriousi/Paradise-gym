@@ -24,3 +24,4 @@ export const useOfflineStore = create<OfflineState>((set) => ({
   setLastSyncedAt: (timestamp: string) => set({ lastSyncedAt: timestamp }),
   resetQueue: () => set({ pendingQueueCount: 0, isSyncing: false }),
 }));
+

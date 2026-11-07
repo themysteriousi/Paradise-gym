@@ -61,3 +61,4 @@ describe('Membership Lifecycle & Renewal Business Logic', () => {
     expect(renewal.status).toBe('active');
   });
 });
+

@@ -112,3 +112,4 @@ To connect the PWA to a live Supabase PostgreSQL database:
 ## 📄 License
 
 MIT License. Designed with ❤️ for Paradise Gym.
+

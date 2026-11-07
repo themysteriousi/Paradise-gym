@@ -172,3 +172,4 @@ export function getPresetPeriod(
     endDate: '2099-12-31',
   };
 }
+
