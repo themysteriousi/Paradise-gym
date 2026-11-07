@@ -1,10 +1,20 @@
 # 📊 Paradise Gym Management PWA — Master Project Status
 
 > **Notice:** This document is the **Single Source of Truth** for project progress, environment configuration, active tasks, and handoff instructions across platforms and agent sessions.  
-> **Last Updated:** 2026-11-07T18:18:50+05:30  
-> **Current Status:** ✅ **100% Complete & Production Ready (All 6 Phases Delivered)**  
+> **Last Updated:** 2026-11-07T19:17:00+05:30  
+> **Current Status:** ✅ **100% Complete & Production Ready (All 6 Phases Delivered + Mobile UI/UX & Cutoff Hardening Complete)**  
 > **Test Suite:** **23 Test Files | 97 Passing Tests (0 Failures, ~1.5s Execution)**  
 > **Production Build:** `npm run build` succeeds with zero errors (TypeScript + Vite PWA Workbox)
+
+---
+
+## 🎨 UI/UX Performance & Mobile Cutoff Hardening (Completed)
+- **Viewport Dynamic Height (`100dvh`)**: Migrated containers to `min-h-[100dvh]` to dynamically adapt when mobile browser address/navigation bars collapse or expand.
+- **Scroll Momentum & Trap Elimination**: Removed nested `overflow-y: auto` conflicts between `html` and `body`. Scoped natural momentum touch scrolling directly to `body` (`-webkit-overflow-scrolling: touch`), allowing fluid 60fps vertical swipe.
+- **Hardware Acceleration without 3D Perspective**: Removed `perspective: 1000px` which caused WebKit/Blink touch events to become trapped and prevented scrolling on cards.
+- **Touch Acceleration (`touch-pan-y`)**: Added `touch-pan-y` across all member, payment, attendance, and dashboard card lists to ensure immediate flick-scrolling without touch delays.
+- **Bottom Navigation Clearance**: Expanded main container bottom clearance to `pb-[calc(7.5rem+env(safe-area-inset-bottom,0px))]` (~120px+ clearance), guaranteeing that the lowest card always floats cleanly above the fixed bottom navigation bar with abundant margin.
+- **Android Chrome Tooltip Overlay Suppression**: Eliminated the native dark "Display a menu" tooltip popup by attaching `type="button"`, preventing context-menu interception on touch-and-hold (`onContextMenu={e => e.preventDefault()}`), removing redundant `aria-label` attributes on labeled buttons, and applying `select-none` to navigation bars.
 
 ---
 
