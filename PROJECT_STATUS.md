@@ -1,9 +1,9 @@
 # 📊 Paradise Gym Management PWA — Master Project Status
 
 > **Notice:** This document is the **Single Source of Truth** for project progress, environment configuration, active tasks, and handoff instructions across platforms and agent sessions.  
-> **Last Updated:** 2026-11-07T17:25:30+05:30  
+> **Last Updated:** 2026-11-07T17:35:00+05:30  
 > **Current Phase:** Phase 3 — Financial Management & Payments  
-> **Active Task:** Task 3.3 — Expense Tracking & Partner Transactions (Capital/Draws)
+> **Active Task:** Task 3.4 — Financial Reporting & Estimated Profit
 
 ---
 
@@ -24,7 +24,7 @@
 |---|---|---|---|
 | **Phase 1** | Foundation & Project Shell (Vite, PWA, Supabase, Auth, Navigation, Setup, Demo) | ✅ Completed | 100% |
 | **Phase 2** | Member & Membership Lifecycle (CRUD, Queue, Plans, Renewals, Cards, CSV Import) | ✅ Completed | 100% |
-| **Phase 3** | Financial Management & Payments (Split, FIFO, Refunds, Expenses, Capital, P&L) | 🔄 In Progress | 50% |
+| **Phase 3** | Financial Management & Payments (Split, FIFO, Refunds, Expenses, Capital, P&L) | 🔄 In Progress | 75% |
 | **Phase 4** | QR Attendance & Resilient Offline Sync (QR tokens, Scanner, IndexedDB, Auto-sync) | ⏳ Pending | 0% |
 | **Phase 5** | Operational Dashboard & WhatsApp Engine (Metrics, Templates, Closures) | ⏳ Pending | 0% |
 | **Phase 6** | Data Export, Help Guides & Release (Exports, Docs, Playwright E2E, Security) | ⏳ Pending | 0% |
@@ -48,7 +48,7 @@
 - [x] **Task 2.4: Digital Membership Card & WhatsApp Share Generator**
 - [x] **Task 2.5: CSV/Excel Member Import with Preview & Validation**
 
-### Phase 3: Financial Management & Payments (Active - 50%)
+### Phase 3: Financial Management & Payments (Active - 75%)
 - [x] **Task 3.1: Payment Recording, Split Payments & FIFO Allocation**
   - `paymentService.ts` (FIFO charge allocation, split methods, paise precision)
   - `PaymentListPage.tsx` (Summary cards, date & method filters, receipt modal)
@@ -56,7 +56,7 @@
 - [x] **Task 3.2: Refunds, Payment Corrections & Audit Logging**
   - Non-destructive refunds & correction history with audit reasons
   - `RefundModal.tsx` & `CorrectionModal.tsx`
-- [ ] **Task 3.3: Expense Tracking & Partner Transactions (Capital/Draws)**
+- [x] **Task 3.3: Expense Tracking & Partner Transactions (Capital/Draws)**
   - `expenseService.ts` (operating expenses vs partner capital withdrawals)
   - `ExpensesPage.tsx` & `PartnerFinancesPage.tsx`
 - [ ] **Task 3.4: Financial Reporting & Estimated Profit**
