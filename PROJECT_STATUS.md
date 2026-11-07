@@ -1,9 +1,9 @@
 # 📊 Paradise Gym Management PWA — Master Project Status
 
 > **Notice:** This document is the **Single Source of Truth** for project progress, environment configuration, active tasks, and handoff instructions across platforms and agent sessions.  
-> **Last Updated:** 2026-11-07T17:12:00+05:30  
-> **Current Phase:** Phase 2 — Member & Membership Lifecycle  
-> **Active Task:** Task 2.5 — CSV/Excel Member Import with Preview & Validation
+> **Last Updated:** 2026-11-07T17:21:00+05:30  
+> **Current Phase:** Phase 3 — Financial Management & Payments  
+> **Active Task:** Task 3.2 — Refunds, Payment Corrections & Audit Logging
 
 ---
 
@@ -23,8 +23,8 @@
 | Phase | Description | Status | Progress |
 |---|---|---|---|
 | **Phase 1** | Foundation & Project Shell (Vite, PWA, Supabase, Auth, Navigation, Setup, Demo) | ✅ Completed | 100% |
-| **Phase 2** | Member & Membership Lifecycle (CRUD, Queue, Plans, Renewals, Cards, CSV Import) | 🔄 In Progress | 90% |
-| **Phase 3** | Financial Management & Payments (Split, FIFO, Refunds, Expenses, Capital, P&L) | ⏳ Pending | 0% |
+| **Phase 2** | Member & Membership Lifecycle (CRUD, Queue, Plans, Renewals, Cards, CSV Import) | ✅ Completed | 100% |
+| **Phase 3** | Financial Management & Payments (Split, FIFO, Refunds, Expenses, Capital, P&L) | 🔄 In Progress | 25% |
 | **Phase 4** | QR Attendance & Resilient Offline Sync (QR tokens, Scanner, IndexedDB, Auto-sync) | ⏳ Pending | 0% |
 | **Phase 5** | Operational Dashboard & WhatsApp Engine (Metrics, Templates, Closures) | ⏳ Pending | 0% |
 | **Phase 6** | Data Export, Help Guides & Release (Exports, Docs, Playwright E2E, Security) | ⏳ Pending | 0% |
@@ -35,47 +35,33 @@
 
 ### Phase 1: Foundation & Project Shell (100% Complete)
 - [x] **Task 1.1: Project Scaffolding with Vite, React, TypeScript & Tailwind CSS**
-  - Scaffold Vite React TS in project root
-  - Setup Tailwind CSS, Lucide icons, clsx, tailwind-merge
-  - Configure Vitest + Testing Library
-  - Unit smoke test passing
 - [x] **Task 1.2: PWA Configuration & Service Worker**
-  - Web manifest (`public/manifest.webmanifest`)
-  - Cloudflare Pages security headers (`public/_headers`)
-  - Workbox service worker caching strategy
 - [x] **Task 1.3: Supabase Schema Migrations & RLS Policies (23 Tables)**
-  - Migration: `supabase/migrations/20261107000000_initial_schema.sql`
-  - Migration: `supabase/migrations/20261107000001_rls_policies.sql`
-  - TypeScript interfaces: `src/types/database.ts` & `src/types/domain.ts`
 - [x] **Task 1.4: Supabase Client, Auth Context & Protected Routing**
-  - Supabase client in `src/lib/supabase.ts`
-  - Zustand auth store `src/stores/authStore.ts`
-  - `AuthGuard.tsx` & `LoginPage.tsx`
 - [x] **Task 1.5: Mobile Bottom Navigation & Responsive App Shell**
-  - `AppShell.tsx`, `BottomNav.tsx`, `Header.tsx`
-  - Dark/Light mode theme toggle in `uiStore.ts`
 - [x] **Task 1.6: First-Time Setup Wizard & Demo Mode Isolation**
-  - `SetupWizardPage.tsx`
-  - Sandboxed `demoStore.ts` and `demoDataService.ts`
 
-### Phase 2: Member & Membership Lifecycle (Active)
+### Phase 2: Member & Membership Lifecycle (100% Complete)
 - [x] **Task 2.1: Member Management & Profile CRUD**
-  - `memberService.ts` (CRUD + sequential ID `GYM001`)
-  - `MemberListPage.tsx` (Search by name/mobile/ID, status tabs, tags)
-  - `MemberDetailPage.tsx` (Status, history, attendance, payments)
-  - `MemberFormModal.tsx`
 - [x] **Task 2.2: Public Self-Registration Portal & Approval Queue**
-  - Public `RegisterPage.tsx`
-  - Partner approval queue `RegistrationQueuePage.tsx`
 - [x] **Task 2.3: Membership Plans, Pricing & Renewal Logic**
-  - `membershipService.ts`
-  - Early renewal preservation logic
-  - `PlanSettingsPage.tsx` & `RenewalModal.tsx`
 - [x] **Task 2.4: Digital Membership Card & WhatsApp Share Generator**
-  - `DigitalCard.tsx` (Canvas/PNG export)
-  - WhatsApp 1-tap pre-filled share
-- [ ] **Task 2.5: CSV/Excel Member Import with Preview & Validation**
-  - `MemberImportPage.tsx` & batch validation service
+- [x] **Task 2.5: CSV/Excel Member Import with Preview & Validation**
+
+### Phase 3: Financial Management & Payments (Active - 25%)
+- [x] **Task 3.1: Payment Recording, Split Payments & FIFO Allocation**
+  - `paymentService.ts` (FIFO charge allocation, split methods, paise precision)
+  - `PaymentListPage.tsx` (Summary cards, date & method filters, receipt modal)
+  - `RecordPaymentModal.tsx` (Single & split payments, UPI QR, dynamic calculations)
+- [ ] **Task 3.2: Refunds, Payment Corrections & Audit Logging**
+  - Non-destructive refunds & correction history with audit reasons
+  - `RefundModal.tsx` & `CorrectionModal.tsx`
+- [ ] **Task 3.3: Expense Tracking & Partner Transactions (Capital/Draws)**
+  - `expenseService.ts` (operating expenses vs partner capital withdrawals)
+  - `ExpensesPage.tsx` & `PartnerFinancesPage.tsx`
+- [ ] **Task 3.4: Financial Reporting & Estimated Profit**
+  - Monthly P&L statement (Collections - Operating Expenses = Estimated Profit)
+  - `FinancialReportsPage.tsx`
 
 ---
 
