@@ -63,6 +63,24 @@ export const whatsappService = {
     return msg;
   },
 
+  formatDueReminder({
+    memberName,
+    gymName,
+    dueAmountFormatted,
+    dueDate,
+  }: {
+    memberName: string;
+    gymName: string;
+    dueAmountFormatted: string;
+    dueDate: string;
+  }): string {
+    return (
+      `🔔 ${gymName} Fee Reminder\n\n` +
+      `Hi ${memberName}, this is a friendly reminder that an instalment of ${dueAmountFormatted} is pending (due date: ${dueDate}).\n\n` +
+      `Please clear the pending dues during your next visit at the desk or via UPI. Thank you! 💪`
+    );
+  },
+
   getWhatsAppLink({ phone, message }: { phone: string; message: string }): string {
     // Strip all non-digit characters
     let cleanPhone = phone.replace(/\D/g, '');

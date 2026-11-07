@@ -3,7 +3,8 @@ import AppShell from '@/components/layout/AppShell';
 import { useUiStore } from '@/stores/uiStore';
 import MemberListPage from '@/pages/members/MemberListPage';
 import PaymentListPage from '@/pages/payments/PaymentListPage';
-import { Users, QrCode, Settings, TrendingUp } from 'lucide-react';
+import MoreHubPage from '@/pages/more/MoreHubPage';
+import { Users, QrCode, TrendingUp } from 'lucide-react';
 
 function DashboardView() {
   return (
@@ -66,7 +67,7 @@ function MainContent() {
     case 'payments':
       return <PaymentListPage />;
     case 'more':
-      return <PlaceholderView title="Gym Settings & Reports" icon={Settings} />;
+      return <MoreHubPage />;
     default:
       return <DashboardView />;
   }
