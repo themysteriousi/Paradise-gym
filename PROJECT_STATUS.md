@@ -1,9 +1,9 @@
 # 📊 Paradise Gym Management PWA — Master Project Status
 
 > **Notice:** This document is the **Single Source of Truth** for project progress, environment configuration, active tasks, and handoff instructions across platforms and agent sessions.  
-> **Last Updated:** 2026-11-07T17:48:40+05:30  
+> **Last Updated:** 2026-11-07T17:58:00+05:30  
 > **Current Phase:** Phase 4 — QR Attendance & Resilient Offline Sync  
-> **Active Task:** Task 4.2 — Camera QR Scanner & Manual Fallback Search
+> **Active Task:** Task 4.3 — IndexedDB Offline Queue & Auto-Sync Engine
 
 ---
 
@@ -25,7 +25,7 @@
 | **Phase 1** | Foundation & Project Shell (Vite, PWA, Supabase, Auth, Navigation, Setup, Demo) | ✅ Completed | 100% |
 | **Phase 2** | Member & Membership Lifecycle (CRUD, Queue, Plans, Renewals, Cards, CSV Import) | ✅ Completed | 100% |
 | **Phase 3** | Financial Management & Payments (Split, FIFO, Refunds, Expenses, Capital, P&L) | ✅ Completed | 100% |
-| **Phase 4** | QR Attendance & Resilient Offline Sync (QR tokens, Scanner, IndexedDB, Auto-sync) | 🔄 In Progress | 33% |
+| **Phase 4** | QR Attendance & Resilient Offline Sync (QR tokens, Scanner, IndexedDB, Auto-sync) | 🔄 In Progress | 66% |
 | **Phase 5** | Operational Dashboard & WhatsApp Engine (Metrics, Templates, Closures) | ⏳ Pending | 0% |
 | **Phase 6** | Data Export, Help Guides & Release (Exports, Docs, Playwright E2E, Security) | ⏳ Pending | 0% |
 
@@ -63,13 +63,16 @@
   - Monthly P&L statement (Collections - Operating Expenses = Estimated Profit)
   - `FinancialReportsPage.tsx` & `MoreHubPage.tsx`
 
-### Phase 4: QR Attendance & Resilient Offline Sync (Active - 33%)
+### Phase 4: QR Attendance & Resilient Offline Sync (Active - 66%)
 - [x] **Task 4.1: Secure QR Token Generation & Revocation**
   - Non-PII secure random token generator, expiration & instant revocation
   - `qrService.ts` & `tests/unit/qrService.test.ts`
-- [ ] **Task 4.2: Camera QR Scanner & Manual Fallback Search**
+- [x] **Task 4.2: Camera QR Scanner & Manual Fallback Search**
   - Device camera barcode reader with ZXing, manual member search fallback, sound feedback
   - `CameraScanner.tsx`, `AttendancePage.tsx`, `CheckInResultModal.tsx`
+- [ ] **Task 4.3: IndexedDB Offline Queue & Auto-Sync Engine**
+  - Local IndexedDB storage, offline badge, retry engine with conflict resolution
+  - `indexedDB.ts`, `offlineSyncService.ts`, `offlineStore.ts`
 - [ ] **Task 4.3: IndexedDB Offline Queue & Auto-Sync Engine**
   - Local IndexedDB storage, offline badge, retry engine with conflict resolution
   - `indexedDB.ts`, `offlineSyncService.ts`, `offlineStore.ts`
