@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, UserPlus, Phone, ChevronRight } from 'lucide-react';
+import { Search, UserPlus, Phone, ChevronRight, UserCheck } from 'lucide-react';
 import type { DbMember, MemberStatus } from '@/types/database';
 import { memberService } from '@/services/memberService';
 import { useAuthStore } from '@/stores/authStore';
 import MemberFormModal from '@/components/members/MemberFormModal';
 import MemberDetailPage from './MemberDetailPage';
+import RegistrationQueuePage from './RegistrationQueuePage';
 
 type StatusFilter = MemberStatus | 'all';
 
@@ -16,6 +17,7 @@ export default function MemberListPage() {
   const [loading, setLoading] = useState(true);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isQueueOpen, setIsQueueOpen] = useState(false);
 
   const fetchMembers = useCallback(async () => {
     if (!currentGym) return;
@@ -35,6 +37,15 @@ export default function MemberListPage() {
   useEffect(() => {
     fetchMembers();
   }, [fetchMembers]);
+
+  if (isQueueOpen) {
+    return (
+      <RegistrationQueuePage
+        onBack={() => setIsQueueOpen(false)}
+        onMemberApproved={fetchMembers}
+      />
+    );
+  }
 
   if (selectedMemberId) {
     return (
@@ -59,6 +70,13 @@ export default function MemberListPage() {
             className="w-full pl-9 pr-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500"
           />
         </div>
+        <button
+          onClick={() => setIsQueueOpen(true)}
+          className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 rounded-xl font-bold transition active:scale-95 flex items-center justify-center"
+          title="Self-Registration Queue"
+        >
+          <UserCheck className="w-4 h-4 text-brand-500" />
+        </button>
         <button
           onClick={() => setIsModalOpen(true)}
           className="p-2.5 bg-brand-500 hover:bg-brand-600 text-slate-950 rounded-xl font-bold transition shadow-lg shadow-brand-500/10 active:scale-95 flex items-center justify-center"
