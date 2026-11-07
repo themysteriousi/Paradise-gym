@@ -206,7 +206,7 @@ export default function PaymentListPage({
       </div>
 
       {/* Payment List */}
-      <div className="space-y-2">
+      <div className="space-y-2 touch-pan-y">
         {filteredPayments.length === 0 ? (
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center space-y-2">
             <Receipt className="w-8 h-8 text-slate-600 mx-auto" />
@@ -228,7 +228,7 @@ export default function PaymentListPage({
             return (
               <div
                 key={p.id}
-                className="bg-slate-900 border border-slate-800 hover:border-slate-700/80 p-3.5 rounded-2xl transition space-y-2"
+                className="bg-slate-900 border border-slate-800 hover:border-slate-700/80 p-3.5 rounded-2xl transition space-y-2 touch-pan-y"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-2.5">

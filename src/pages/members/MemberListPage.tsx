@@ -139,7 +139,7 @@ export default function MemberListPage() {
       </div>
 
       {/* Members List */}
-      <div className="space-y-2">
+      <div className="space-y-2 touch-pan-y">
         {loading ? (
           <div className="space-y-2">
             {[1, 2, 3, 4].map((i) => (
@@ -174,7 +174,7 @@ export default function MemberListPage() {
               <div
                 key={member.id}
                 onClick={() => setSelectedMemberId(member.id)}
-                className="bg-slate-900 border border-slate-800 hover:border-slate-700/80 p-3.5 rounded-2xl flex items-center justify-between active:scale-[0.99] transition cursor-pointer shadow-sm"
+                className="bg-slate-900 border border-slate-800 hover:border-slate-700/80 p-3.5 rounded-2xl flex items-center justify-between active:scale-[0.99] transition cursor-pointer shadow-sm select-none touch-pan-y"
               >
                 <div className="flex items-center space-x-3">
                   <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700/60 flex items-center justify-center font-bold text-xs text-brand-500">

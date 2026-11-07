@@ -19,15 +19,20 @@ export default function BottomNav() {
   const { activeTab, setActiveTab } = useUiStore();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-slate-950/90 backdrop-blur-lg border-t border-slate-800/80 z-40 pb-[max(0.375rem,env(safe-area-inset-bottom))]">
+    <nav
+      onContextMenu={(e) => e.preventDefault()}
+      className="fixed bottom-0 left-0 right-0 bg-slate-950/95 backdrop-blur-lg border-t border-slate-800/80 z-40 pb-[max(0.375rem,env(safe-area-inset-bottom))] select-none"
+    >
       <div className="max-w-lg mx-auto flex items-center justify-around px-2 py-1">
         {NAV_ITEMS.map(({ tab, label, icon: Icon }) => {
           const isActive = activeTab === tab;
           return (
             <button
               key={tab}
+              type="button"
               onClick={() => setActiveTab(tab)}
-              className={`flex flex-col items-center justify-center flex-1 py-1.5 px-1 rounded-2xl transition-all duration-100 min-h-[48px] tap-bounce select-none ${
+              onContextMenu={(e) => e.preventDefault()}
+              className={`flex flex-col items-center justify-center flex-1 py-1.5 px-1 rounded-2xl transition-all duration-100 min-h-[48px] tap-bounce select-none touch-manipulation ${
                 isActive
                   ? 'text-brand-400 font-bold'
                   : 'text-slate-400 hover:text-slate-200'

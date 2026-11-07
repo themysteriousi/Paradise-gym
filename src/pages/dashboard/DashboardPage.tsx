@@ -182,11 +182,11 @@ export default function DashboardPage() {
             </span>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 touch-pan-y">
             {expiringMembers.map((item) => (
               <div
                 key={item.member.id}
-                className="bg-slate-950 p-3 rounded-2xl border border-slate-800/80 flex items-center justify-between"
+                className="bg-slate-950 p-3 rounded-2xl border border-slate-800/80 flex items-center justify-between touch-pan-y"
               >
                 <div>
                   <p className="text-xs font-bold text-white">{item.member.full_name}</p>
@@ -232,7 +232,7 @@ export default function DashboardPage() {
           <span className="text-[10px] text-slate-500 font-mono">Real-time</span>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 touch-pan-y">
           {activityFeed.length === 0 ? (
             <p className="text-xs text-slate-500 italic py-2 text-center">
               No recent activity recorded yet today.

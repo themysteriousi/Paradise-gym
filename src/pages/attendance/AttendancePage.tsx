@@ -203,7 +203,7 @@ export default function AttendancePage() {
           </span>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 touch-pan-y">
           {todaysLogs.length === 0 ? (
             <p className="text-xs text-slate-500 italic py-2 text-center">
               No check-ins recorded yet today. Scan a QR code or use manual check-in.

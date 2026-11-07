@@ -10,19 +10,27 @@
   font-feature-settings: 'tnum' 1, 'cv02' 1, 'cv03' 1, 'cv04' 1, 'cv11' 1;
 }
 
-/* Ensure smooth natural momentum scrolling on mobile */
-html, body {
+/* Ensure smooth natural momentum scrolling on mobile without scroll traps */
+html {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
   min-height: 100%;
+  min-height: 100dvh;
+  margin: 0;
+  padding: 0;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   -webkit-tap-highlight-color: transparent;
-  user-select: none;
   background-color: #020617; /* slate-950 */
 }
 
 #root {
   min-height: 100%;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -33,9 +41,21 @@ button, a, input, select, textarea, [role="button"] {
   -webkit-touch-callout: none;
 }
 
-/* Allow text selection in inputs and copyable text */
+/* UI controls don't trigger accidental text selection on mobile tap */
+button, nav, [role="button"], .no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Allow natural text selection in inputs and copyable text */
 input, textarea, .selectable, [contenteditable="true"] {
   user-select: text;
+  -webkit-user-select: text;
+}
+
+/* Vertical scroll acceleration on lists */
+.touch-pan-y {
+  touch-action: pan-y;
 }
 
 /* Custom caret color */

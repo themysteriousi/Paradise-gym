@@ -129,3 +129,4 @@ Paradise Gym Management PWA is built for high-throughput, tactile mobile operati
 - Do not add complex multi-layered blur filters or nested cards that cause scroll lag on mobile processors.
 - Do not embed PII (names, phone numbers) into QR code payloads.
 - Do not block user interactions when offline; always queue to IndexedDB with optimistic UI feedback.
+

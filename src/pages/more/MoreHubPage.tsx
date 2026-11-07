@@ -139,14 +139,15 @@ export default function MoreHubPage() {
         <p className="text-xs text-slate-400">Gym governance, finances, and administration</p>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 touch-pan-y">
         {MENU_ITEMS.map((item) => {
           const Icon = item.icon;
           return (
             <button
               key={item.id}
+              type="button"
               onClick={() => setSubView(item.id)}
-              className="w-full bg-slate-900 border border-slate-800 hover:border-slate-700/80 p-4 rounded-2xl flex items-center justify-between text-left transition group"
+              className="w-full bg-slate-900 border border-slate-800 hover:border-slate-700/80 p-4 rounded-2xl flex items-center justify-between text-left transition group active:scale-[0.99] select-none"
             >
               <div className="flex items-center space-x-3.5">
                 <div className={`p-3 rounded-2xl border ${item.color}`}>
