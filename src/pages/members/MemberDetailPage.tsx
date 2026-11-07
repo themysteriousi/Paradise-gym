@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Phone, Calendar, Clock, Archive, Sparkles } from 'lucide-react';
+import { ArrowLeft, Phone, Calendar, Clock, Archive, Sparkles, RefreshCw } from 'lucide-react';
 import type { DbMember } from '@/types/database';
 import { memberService } from '@/services/memberService';
 import { useAuthStore } from '@/stores/authStore';
+import RenewalModal from '@/components/memberships/RenewalModal';
 
 interface MemberDetailPageProps {
   memberId: string;
@@ -12,6 +13,7 @@ interface MemberDetailPageProps {
 export default function MemberDetailPage({ memberId, onBack }: MemberDetailPageProps) {
   const [member, setMember] = useState<DbMember | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRenewalOpen, setIsRenewalOpen] = useState(false);
   const currentPartner = useAuthStore((s) => s.currentPartner);
 
   const loadMember = useCallback(async () => {
@@ -150,13 +152,29 @@ export default function MemberDetailPage({ memberId, onBack }: MemberDetailPageP
       </div>
 
       {/* Quick Action Button */}
-      <button
-        onClick={() => alert(`Digital membership card generation will be triggered in Task 2.4`)}
-        className="w-full py-3 bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-brand-500/10 flex items-center justify-center space-x-1.5 active:scale-[0.98] transition"
-      >
-        <Sparkles className="w-4 h-4" />
-        <span>Generate & Share Digital Card</span>
-      </button>
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          onClick={() => setIsRenewalOpen(true)}
+          className="py-3 bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-brand-500/10 flex items-center justify-center space-x-1.5 active:scale-[0.98] transition"
+        >
+          <RefreshCw className="w-4 h-4 stroke-[2.5]" />
+          <span>Renew Plan</span>
+        </button>
+        <button
+          onClick={() => alert(`Digital membership card generation will be triggered in Task 2.4`)}
+          className="py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/80 font-semibold text-xs rounded-xl flex items-center justify-center space-x-1.5 active:scale-[0.98] transition"
+        >
+          <Sparkles className="w-4 h-4 text-amber-400" />
+          <span>Digital Card</span>
+        </button>
+      </div>
+
+      <RenewalModal
+        member={member}
+        isOpen={isRenewalOpen}
+        onClose={() => setIsRenewalOpen(false)}
+        onRenewed={loadMember}
+      />
     </div>
   );
 }
