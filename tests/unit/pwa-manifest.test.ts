@@ -25,3 +25,4 @@ describe('PWA Manifest & Headers Verification', () => {
     expect(headersContent).toContain('Permissions-Policy');
   });
 });
+

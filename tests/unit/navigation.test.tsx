@@ -31,3 +31,4 @@ describe('Bottom Navigation & UI Store', () => {
     expect(useUiStore.getState().theme).not.toBe(initialTheme);
   });
 });
+

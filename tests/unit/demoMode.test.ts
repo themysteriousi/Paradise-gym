@@ -41,3 +41,4 @@ describe('Demo Mode Isolation & Data Generator', () => {
     expect(useDemoStore.getState().members.length).toBe(initialCount + 1);
   });
 });
+

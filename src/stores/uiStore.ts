@@ -37,3 +37,4 @@ export const useUiStore = create<UiState>((set) => ({
       return { theme: nextTheme };
     }),
 }));
+
