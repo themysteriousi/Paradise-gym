@@ -3,8 +3,9 @@ import AppShell from '@/components/layout/AppShell';
 import { useUiStore } from '@/stores/uiStore';
 import MemberListPage from '@/pages/members/MemberListPage';
 import PaymentListPage from '@/pages/payments/PaymentListPage';
+import AttendancePage from '@/pages/attendance/AttendancePage';
 import MoreHubPage from '@/pages/more/MoreHubPage';
-import { Users, QrCode, TrendingUp } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 
 function DashboardView() {
   return (
@@ -40,20 +41,6 @@ function DashboardView() {
   );
 }
 
-function PlaceholderView({ title, icon: Icon }: { title: string; icon: typeof Users }) {
-  return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center space-y-3">
-      <div className="inline-flex p-3 rounded-2xl bg-slate-800 text-brand-500 border border-slate-700/60">
-        <Icon className="w-6 h-6" />
-      </div>
-      <h3 className="text-lg font-bold text-white">{title}</h3>
-      <p className="text-xs text-slate-400 max-w-xs mx-auto">
-        Module scaffolded and ready for implementation in the next phase.
-      </p>
-    </div>
-  );
-}
-
 function MainContent() {
   const activeTab = useUiStore((s) => s.activeTab);
 
@@ -63,7 +50,7 @@ function MainContent() {
     case 'members':
       return <MemberListPage />;
     case 'attendance':
-      return <PlaceholderView title="QR Attendance Scanner" icon={QrCode} />;
+      return <AttendancePage />;
     case 'payments':
       return <PaymentListPage />;
     case 'more':
