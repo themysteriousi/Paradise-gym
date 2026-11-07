@@ -1,10 +1,17 @@
-import type { DbMember, DbMembershipPlan, DbPayment, DbAttendance } from '@/types/database';
+import type {
+  DbMember,
+  DbMembershipPlan,
+  DbPayment,
+  DbAttendance,
+  DbMembership,
+} from '@/types/database';
 
 export interface DemoDataset {
   members: DbMember[];
   plans: DbMembershipPlan[];
   payments: DbPayment[];
   attendance: DbAttendance[];
+  memberships: DbMembership[];
 }
 
 export function generateDemoDataset(): DemoDataset {
@@ -62,6 +69,7 @@ export function generateDemoDataset(): DemoDataset {
   const members: DbMember[] = [];
   const payments: DbPayment[] = [];
   const attendance: DbAttendance[] = [];
+  const memberships: DbMembership[] = [];
 
   for (let i = 0; i < 20; i++) {
     const fn = firstNames[i % firstNames.length];
@@ -117,7 +125,7 @@ export function generateDemoDataset(): DemoDataset {
         member_id: memberId,
         membership_id: 'plan-monthly',
         method: i % 3 === 0 ? 'manual' : 'qr_scan',
-        checked_in_at: new Date(Date.now() - (i * 3600000)).toISOString(),
+        checked_in_at: new Date(Date.now() - i * 3600000).toISOString(),
         checked_in_by: partnerId,
         device_id: 'device-demo-01',
         note: null,
@@ -128,7 +136,31 @@ export function generateDemoDataset(): DemoDataset {
         correction_reason: null,
       });
     }
+
+    // Seed membership
+    const startDaysAgo = (20 - i) * 2;
+    const startDate = new Date(Date.now() - startDaysAgo * 86400000);
+    const endDate = new Date(startDate.getTime() + 30 * 86400000);
+    memberships.push({
+      id: `demo-membership-${i + 1}`,
+      gym_id: gymId,
+      member_id: memberId,
+      plan_id: 'plan-monthly',
+      status: i === 18 ? 'expired' : 'active',
+      start_date: startDate.toISOString(),
+      end_date: endDate.toISOString(),
+      price_paise: 150000,
+      paid_paise: 150000,
+      balance_paise: 0,
+      paused_at: null,
+      paused_by: null,
+      cancelled_at: null,
+      cancelled_by: null,
+      cancel_reason: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
   }
 
-  return { members, plans, payments, attendance };
+  return { members, plans, payments, attendance, memberships };
 }

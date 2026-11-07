@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type {
   DbMember,
+  DbMembership,
   DbMembershipPlan,
   DbPayment,
   DbAttendance,
@@ -8,11 +9,14 @@ import type {
   DbExpense,
   DbPartnerTransaction,
   DbQrToken,
+  DbGymClosure,
+  DbMembershipExtension,
 } from '@/types/database';
 import { generateDemoDataset } from '@/services/demoDataService';
 
 interface DemoState {
   members: DbMember[];
+  memberships: DbMembership[];
   plans: DbMembershipPlan[];
   payments: DbPayment[];
   refunds: DbRefund[];
@@ -20,7 +24,11 @@ interface DemoState {
   partnerTransactions: DbPartnerTransaction[];
   qrTokens: DbQrToken[];
   attendance: DbAttendance[];
+  closures: DbGymClosure[];
+  extensions: DbMembershipExtension[];
   addMember: (member: DbMember) => void;
+  addMembership: (membership: DbMembership) => void;
+  updateMembership: (id: string, updates: Partial<DbMembership>) => void;
   recordAttendance: (attendance: DbAttendance) => void;
   recordPayment: (payment: DbPayment) => void;
   updatePayment: (id: string, updates: Partial<DbPayment>) => void;
@@ -30,6 +38,8 @@ interface DemoState {
   addQrToken: (token: DbQrToken) => void;
   revokeQrTokensForMember: (memberId: string, revokedBy?: string) => void;
   revokeQrTokenByString: (tokenString: string, revokedBy: string) => void;
+  addClosure: (closure: DbGymClosure) => void;
+  addExtension: (extension: DbMembershipExtension) => void;
   resetToDefault: () => void;
 }
 
@@ -37,6 +47,7 @@ const initialData = generateDemoDataset();
 
 export const useDemoStore = create<DemoState>((set) => ({
   members: initialData.members,
+  memberships: initialData.memberships,
   plans: initialData.plans,
   payments: initialData.payments,
   refunds: [],
@@ -44,9 +55,19 @@ export const useDemoStore = create<DemoState>((set) => ({
   partnerTransactions: [],
   qrTokens: [],
   attendance: initialData.attendance,
+  closures: [],
+  extensions: [],
 
   addMember: (member) =>
     set((state) => ({ members: [member, ...state.members] })),
+
+  addMembership: (membership) =>
+    set((state) => ({ memberships: [membership, ...state.memberships] })),
+
+  updateMembership: (id, updates) =>
+    set((state) => ({
+      memberships: state.memberships.map((m) => (m.id === id ? { ...m, ...updates } : m)),
+    })),
 
   recordAttendance: (att) =>
     set((state) => ({ attendance: [att, ...state.attendance] })),
@@ -97,10 +118,17 @@ export const useDemoStore = create<DemoState>((set) => ({
       ),
     })),
 
+  addClosure: (closure) =>
+    set((state) => ({ closures: [closure, ...state.closures] })),
+
+  addExtension: (extension) =>
+    set((state) => ({ extensions: [extension, ...state.extensions] })),
+
   resetToDefault: () => {
     const refreshed = generateDemoDataset();
     set({
       members: refreshed.members,
+      memberships: refreshed.memberships,
       plans: refreshed.plans,
       payments: refreshed.payments,
       refunds: [],
@@ -108,7 +136,8 @@ export const useDemoStore = create<DemoState>((set) => ({
       partnerTransactions: [],
       qrTokens: [],
       attendance: refreshed.attendance,
+      closures: [],
+      extensions: [],
     });
   },
 }));
-

@@ -14,9 +14,6 @@ export interface CreateMembershipInput {
   paidPaise?: number;
 }
 
-// In-memory demo memberships
-let demoMemberships: DbMembership[] = [];
-
 export const membershipService = {
   calculateExpiryDate(startDate: Date, durationDays: number): Date {
     const expiry = new Date(startDate.getTime());
@@ -79,7 +76,7 @@ export const membershipService = {
     };
 
     if (isDemo) {
-      demoMemberships.push(record);
+      useDemoStore.getState().addMembership(record);
       return record;
     }
 
@@ -107,8 +104,9 @@ export const membershipService = {
 
     if (isDemo) {
       return (
-        demoMemberships
-          .filter((m) => m.member_id === memberId && m.status === 'active')
+        useDemoStore
+          .getState()
+          .memberships.filter((m) => m.member_id === memberId && m.status === 'active')
           .sort((a, b) => new Date(b.end_date).getTime() - new Date(a.end_date).getTime())[0] || null
       );
     }
@@ -127,6 +125,6 @@ export const membershipService = {
   },
 
   _resetDemo() {
-    demoMemberships = [];
+    useDemoStore.getState().resetToDefault();
   },
 };

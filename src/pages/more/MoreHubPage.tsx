@@ -3,6 +3,7 @@ import FinancialReportsPage from './FinancialReportsPage';
 import ExpensesPage from './ExpensesPage';
 import PartnerFinancesPage from './PartnerFinancesPage';
 import PlanSettingsPage from './PlanSettingsPage';
+import ClosuresPage from './ClosuresPage';
 import RegistrationQueuePage from '@/pages/members/RegistrationQueuePage';
 import MemberImportPage from '@/pages/members/MemberImportPage';
 import {
@@ -10,6 +11,7 @@ import {
   Receipt,
   Users,
   Settings,
+  CalendarOff,
   UserCheck,
   UploadCloud,
   ChevronRight,
@@ -22,6 +24,7 @@ type SubView =
   | 'expenses'
   | 'partner-finances'
   | 'plans'
+  | 'closures'
   | 'queue'
   | 'import';
 
@@ -43,6 +46,7 @@ export default function MoreHubPage() {
         {subView === 'expenses' && <ExpensesPage />}
         {subView === 'partner-finances' && <PartnerFinancesPage />}
         {subView === 'plans' && <PlanSettingsPage />}
+        {subView === 'closures' && <ClosuresPage />}
         {subView === 'queue' && <RegistrationQueuePage onBack={() => setSubView('menu')} />}
         {subView === 'import' && (
           <MemberImportPage
@@ -82,6 +86,13 @@ export default function MoreHubPage() {
       desc: 'Configure Monthly, Quarterly, and Annual pricing',
       icon: Settings,
       color: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+    },
+    {
+      id: 'closures' as const,
+      title: 'Gym Closures & Extensions',
+      desc: 'Holiday & maintenance shutdown management with 1-tap auto-extensions',
+      icon: CalendarOff,
+      color: 'text-rose-400 bg-rose-500/10 border-rose-500/20',
     },
     {
       id: 'queue' as const,
