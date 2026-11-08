@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dumbbell, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
+import { Dumbbell, ArrowRight } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useDemoStore } from '@/stores/demoStore';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
@@ -30,7 +30,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       });
 
@@ -71,95 +71,109 @@ export default function LoginPage() {
         updated_at: new Date().toISOString(),
       });
     } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : 'Login failed. Please check credentials.');
+      console.error('Login error:', err);
+      let msg = 'Login failed. Please check credentials.';
+      if (err instanceof Error) {
+        msg = err.message;
+      } else if (err && typeof err === 'object') {
+        const o = err as Record<string, unknown>;
+        msg = (o.message as string) || (o.details as string) || (o.error_description as string) || msg;
+      }
+      setErrorMsg(msg);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center px-4 py-8">
-      <div className="max-w-md w-full mx-auto space-y-6">
-        {/* Brand Header */}
-        <div className="text-center space-y-3">
-          <div className="inline-flex bg-brand-500 p-3 rounded-2xl text-slate-950 shadow-lg shadow-brand-500/20">
-            <Dumbbell className="w-8 h-8 stroke-[2.5]" />
+    <div className="min-h-[100dvh] bg-[#0d0f12] text-[#ededed] flex flex-col justify-center items-center px-4 py-8 select-none">
+      <div className="max-w-[360px] w-full mx-auto space-y-6">
+        {/* Terminal Header */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex w-11 h-11 rounded-xl bg-white/[0.04] border border-white/[0.08] text-emerald-400 items-center justify-center">
+            <Dumbbell className="w-5 h-5 stroke-[1.75]" />
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-white">Paradise Gym</h1>
-          <p className="text-sm text-slate-400">Partner & Owner Management Portal</p>
+          <div>
+            <h1 className="text-lg font-semibold tracking-normal text-[#ededed]">Paradise Gym</h1>
+            <p className="text-xs text-[#a1a1a6] mt-0.5">Front-desk operations terminal</p>
+          </div>
         </div>
 
-        {/* Login Form */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-          <div className="flex items-center space-x-2 text-xs text-brand-500 font-semibold uppercase tracking-wider">
-            <ShieldCheck className="w-4 h-4" />
-            <span>Secure Partner Access</span>
+        {/* Terminal Card */}
+        <div className="bg-[#14161c] border border-white/[0.08] rounded-2xl p-6 space-y-5">
+          <div className="flex items-center justify-between text-[11px] font-mono text-[#71717a] border-b border-white/[0.06] pb-3">
+            <span>Terminal 01</span>
+            <span className="flex items-center gap-1.5 text-[#a1a1a6]">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Ready
+            </span>
           </div>
 
           {errorMsg && (
-            <div className="p-3 bg-red-950/80 border border-red-800 text-red-200 text-xs rounded-xl">
+            <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs rounded-lg leading-relaxed">
               {errorMsg}
             </div>
           )}
 
           <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Partner Email</label>
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-[#a1a1a6]">Partner email</label>
               <input
                 type="email"
                 required
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="partner@paradisegym.com"
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                className="w-full h-10 px-3 bg-[#0d0f12] border border-white/[0.08] rounded-lg text-sm text-[#ededed] placeholder-[#52525b] focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition-colors"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Password</label>
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-[#a1a1a6]">Password</label>
               <input
                 type="password"
                 required
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                className="w-full h-10 px-3 bg-[#0d0f12] border border-white/[0.08] rounded-lg text-sm text-[#ededed] placeholder-[#52525b] focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition-colors"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-slate-950 font-bold text-sm rounded-xl transition duration-150 flex items-center justify-center space-x-2 shadow-lg shadow-brand-500/10 active:scale-[0.98]"
+              className="w-full h-10 px-4 bg-emerald-500 hover:bg-emerald-450 active:bg-emerald-600 disabled:opacity-50 text-slate-950 font-medium text-xs rounded-lg transition-colors duration-150 flex items-center justify-center space-x-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]"
             >
-              <span>{loading ? 'Signing in...' : 'Sign In'}</span>
-              <ArrowRight className="w-4 h-4" />
+              <span>{loading ? 'Signing in...' : 'Sign in'}</span>
+              <ArrowRight className="w-3.5 h-3.5 stroke-[2]" />
             </button>
           </form>
 
-          {/* Quick Demo Access Divider */}
-          <div className="relative py-2">
+          {/* Quiet Demo Divider */}
+          <div className="relative py-1">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-800"></div>
+              <div className="w-full border-t border-white/[0.06]"></div>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-slate-900 px-2 text-slate-500">Or Explore</span>
+            <div className="relative flex justify-center text-[11px]">
+              <span className="bg-[#14161c] px-2 text-[#71717a]">or</span>
             </div>
           </div>
 
-          {/* Instant Demo Button */}
+          {/* Instant Demo Terminal Access */}
           <button
             type="button"
             onClick={handleDemoAccess}
-            className="w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700/80 font-medium text-xs rounded-xl transition flex items-center justify-center space-x-2 active:scale-[0.98]"
+            className="w-full h-9 px-4 bg-white/[0.03] hover:bg-white/[0.06] text-[#ededed] border border-white/[0.08] font-medium text-xs rounded-lg transition-colors duration-150 flex items-center justify-center space-x-2"
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Launch Instant Demo Mode (No Setup Needed)</span>
+            <span>Launch demo mode</span>
           </button>
         </div>
 
-        <p className="text-center text-xs text-slate-600">
-          Zero-cost PWA · Cloudflare Pages & Supabase
+        <p className="text-center text-[11px] text-[#71717a] font-mono">
+          Paradise Gym Operations · Station 01
         </p>
       </div>
     </div>
