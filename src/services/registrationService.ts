@@ -2,6 +2,8 @@ import type { DbMember } from '@/types/database';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
 import { memberService } from './memberService';
+import { membershipService } from './membershipService';
+import { generateMemberQrToken } from './qrService';
 
 export interface RegistrationSubmission {
   id: string;
@@ -74,7 +76,7 @@ export const registrationService = {
         full_name: submission.full_name,
         phone: submission.phone,
         email: submission.email,
-        selected_plan_id: submission.selected_plan_id,
+        notes: JSON.stringify({ selected_plan_id: submission.selected_plan_id }),
         gender: submission.gender,
         date_of_birth: submission.date_of_birth,
         status: submission.status,
@@ -83,7 +85,10 @@ export const registrationService = {
       .single();
 
     if (error) throw error;
-    return data as RegistrationSubmission;
+    return {
+      ...(data as RegistrationSubmission),
+      selected_plan_id: submission.selected_plan_id,
+    };
   },
 
   async getPendingSubmissions(gymId: string): Promise<RegistrationSubmission[]> {
@@ -101,7 +106,18 @@ export const registrationService = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return (data || []) as RegistrationSubmission[];
+    return (data || []).map((row) => {
+      let selectedPlan = 'plan-monthly';
+      try {
+        const parsed = JSON.parse(row.notes || '{}');
+        if (parsed.selected_plan_id) selectedPlan = parsed.selected_plan_id;
+      } catch (_) {}
+
+      return {
+        ...row,
+        selected_plan_id: selectedPlan,
+      } as RegistrationSubmission;
+    });
   },
 
   async approveSubmission(submissionId: string, partnerId: string): Promise<DbMember> {
@@ -118,13 +134,20 @@ export const registrationService = {
         .eq('id', submissionId)
         .single();
       if (error) throw error;
-      sub = data as RegistrationSubmission;
+
+      let selectedPlan = 'plan-monthly';
+      try {
+        const parsed = JSON.parse(data.notes || '{}');
+        if (parsed.selected_plan_id) selectedPlan = parsed.selected_plan_id;
+      } catch (_) {}
+
+      sub = { ...data, selected_plan_id: selectedPlan } as RegistrationSubmission;
     }
 
     if (!sub) throw new Error('Submission not found');
     if (sub.status !== 'pending') throw new Error(`Submission already ${sub.status}`);
 
-    // Create active member record
+    // 1. Create active member record
     const newMember = await memberService.createMember({
       gymId: sub.gym_id,
       fullName: sub.full_name,
@@ -135,7 +158,40 @@ export const registrationService = {
       notes: 'Approved from public self-registration',
     });
 
-    // Mark submission as approved
+    // 2. Generate initial QR token for attendance scanning
+    try {
+      await generateMemberQrToken({
+        gym_id: sub.gym_id,
+        member_id: newMember.id,
+        expires_in_days: 365,
+      });
+    } catch (tokenErr) {
+      console.warn('Failed to generate initial QR token for approved member:', tokenErr);
+    }
+
+    // 3. Attach their selected membership plan (fee marked due until paid at desk)
+    try {
+      const plans = await membershipService.getPlans(sub.gym_id);
+      const chosenPlan =
+        plans.find((p) => p.id === sub?.selected_plan_id) || plans[0];
+
+      if (chosenPlan) {
+        await membershipService.createMembership({
+          gymId: sub.gym_id,
+          memberId: newMember.id,
+          planId: chosenPlan.id,
+          pricePaise: chosenPlan.price_paise,
+          paidPaise: 0, // due until collected
+          startDate: new Date(),
+          durationDays: chosenPlan.duration_days || 30,
+          partnerId,
+        });
+      }
+    } catch (planErr) {
+      console.warn('Failed to assign initial plan for approved member:', planErr);
+    }
+
+    // 4. Mark submission as approved
     if (isDemo) {
       sub.status = 'approved';
       sub.reviewed_by = partnerId;
@@ -143,7 +199,7 @@ export const registrationService = {
     } else {
       await supabase
         .from('registration_submissions')
-        .update({ status: 'approved', reviewed_by: partnerId, reviewed_at: now })
+        .update({ status: 'approved', reviewed_by: partnerId, reviewed_at: now, member_id: newMember.id })
         .eq('id', submissionId);
     }
 

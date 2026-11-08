@@ -97,3 +97,4 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION ensure_partner_and_gym() TO authenticated;
+

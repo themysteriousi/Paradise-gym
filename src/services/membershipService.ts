@@ -33,18 +33,51 @@ export const membershipService = {
     const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
 
     if (isDemo) {
-      return useDemoStore.getState().plans.filter((p) => p.gym_id === gymId);
+      const demoPlans = useDemoStore.getState().plans;
+      const matched = demoPlans.filter((p) => p.gym_id === gymId);
+      if (matched.length > 0) return matched;
+      return demoPlans.map((p) => ({ ...p, gym_id: gymId }));
     }
 
-    const { data, error } = await supabase
-      .from('membership_plans')
-      .select('*')
-      .eq('gym_id', gymId)
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true });
+    try {
+      const { data, error } = await supabase
+        .from('membership_plans')
+        .select('*')
+        .eq('gym_id', gymId)
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
 
-    if (error) throw error;
-    return (data || []) as DbMembershipPlan[];
+      if (error) throw error;
+      if (data && data.length > 0) {
+        return data as DbMembershipPlan[];
+      }
+
+      // If no plans in DB yet for this gym, auto-seed default standard plans
+      const defaultPlansToSeed = useDemoStore.getState().plans.map((p) => ({
+        gym_id: gymId,
+        name: p.name,
+        description: p.description,
+        billing_cycle: p.billing_cycle,
+        duration_days: p.duration_days,
+        price_paise: p.price_paise,
+        features: p.features,
+        is_active: true,
+        sort_order: p.sort_order,
+      }));
+
+      const { data: seeded, error: seedError } = await supabase
+        .from('membership_plans')
+        .insert(defaultPlansToSeed)
+        .select();
+
+      if (!seedError && seeded && seeded.length > 0) {
+        return seeded as DbMembershipPlan[];
+      }
+    } catch (err) {
+      console.warn('Could not fetch or seed Supabase membership_plans, falling back to default plans:', err);
+    }
+
+    return useDemoStore.getState().plans.map((p) => ({ ...p, gym_id: gymId }));
   },
 
   async createMembership(input: CreateMembershipInput): Promise<DbMembership> {

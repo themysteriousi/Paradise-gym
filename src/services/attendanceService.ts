@@ -2,6 +2,7 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useDemoStore } from '@/stores/demoStore';
 import { useAuthStore } from '@/stores/authStore';
 import { validateQrToken } from './qrService';
+import { membershipService } from './membershipService';
 import type { DbAttendance, DbMember, AttendanceMethod } from '@/types/database';
 
 export interface ProcessCheckInInput {
@@ -108,16 +109,20 @@ export async function processMemberCheckIn(
   const recent = checkRecentCheckIn(member.id, 15);
   const isDuplicateWarning = recent.hasRecent;
 
-  // 3. Status and Dues warnings
+  // 3. Status and Dues warnings based on real membership data
+  const activeMs = await membershipService.getMemberActiveMembership(member.id);
+  const membershipId = activeMs?.id || null;
+
   let statusWarning: string | undefined;
-  if (member.status === 'expired') {
-    statusWarning = 'Membership is EXPIRED. Please renew.';
-  } else if (member.status === 'paused') {
+  if (!activeMs) {
+    statusWarning = 'No active membership plan on file.';
+  } else if (new Date(activeMs.end_date).getTime() < Date.now()) {
+    statusWarning = `Membership expired on ${new Date(activeMs.end_date).toLocaleDateString('en-IN')}. Please renew.`;
+  } else if (activeMs.status === 'paused') {
     statusWarning = 'Membership is PAUSED.';
   }
 
-  const hasOutstandingDues =
-    member.notes?.includes('Pending') || member.id === 'demo-member-1';
+  const hasOutstandingDues = activeMs ? (activeMs.balance_paise || 0) > 0 : false;
 
   // 4. Record attendance
   const now = new Date().toISOString();
@@ -127,7 +132,7 @@ export async function processMemberCheckIn(
     id: recordId,
     gym_id: input.gym_id,
     member_id: member.id,
-    membership_id: 'plan-monthly',
+    membership_id: membershipId || 'unassigned',
     method: input.method,
     checked_in_at: now,
     checked_in_by: input.checked_in_by || null,
@@ -158,7 +163,7 @@ export async function processMemberCheckIn(
       .insert({
         gym_id: input.gym_id,
         member_id: member.id,
-        membership_id: attendanceRecord.membership_id,
+        membership_id: membershipId,
         method: input.method,
         checked_in_at: now,
         checked_in_by: input.checked_in_by || null,

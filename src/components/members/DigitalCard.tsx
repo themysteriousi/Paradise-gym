@@ -3,6 +3,7 @@ import { Dumbbell, Download, MessageSquare, X } from 'lucide-react';
 import type { DbMember } from '@/types/database';
 import { cardGeneratorService } from '@/services/cardGeneratorService';
 import { whatsappService } from '@/services/whatsappService';
+import { generateMemberQrToken, getActiveTokenForMember } from '@/services/qrService';
 import { useAuthStore } from '@/stores/authStore';
 
 interface DigitalCardProps {
@@ -15,8 +16,8 @@ interface DigitalCardProps {
 
 export default function DigitalCard({
   member,
-  planName = 'Monthly Standard',
-  expiryDateFormatted = '31 Dec 2026',
+  planName = 'No Active Plan',
+  expiryDateFormatted = 'N/A',
   isOpen,
   onClose,
 }: DigitalCardProps) {
@@ -26,10 +27,35 @@ export default function DigitalCard({
   const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
-    // Generate secure non-PII token
-    const token = `PGYM-TOKEN-${member.id.slice(0, 8)}`;
-    cardGeneratorService.generateQRCodeDataUrl(token).then(setQrDataUrl);
-  }, [member.id]);
+    if (!isOpen) return;
+
+    let isMounted = true;
+    async function loadToken() {
+      try {
+        const gymId = currentGym?.id || member.gym_id;
+        let tokenRecord = getActiveTokenForMember(member.id);
+        if (!tokenRecord) {
+          tokenRecord = await generateMemberQrToken({
+            gym_id: gymId,
+            member_id: member.id,
+            expires_in_days: 365,
+          });
+        }
+
+        if (tokenRecord?.token && isMounted) {
+          const url = await cardGeneratorService.generateQRCodeDataUrl(tokenRecord.token);
+          if (isMounted) setQrDataUrl(url);
+        }
+      } catch (err) {
+        console.error('Failed to generate pass QR code:', err);
+      }
+    }
+
+    loadToken();
+    return () => {
+      isMounted = false;
+    };
+  }, [member.id, member.gym_id, currentGym?.id, isOpen]);
 
   if (!isOpen) return null;
 

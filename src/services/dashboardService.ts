@@ -57,10 +57,10 @@ export function computeDashboardMetrics(): DashboardMetrics {
     )
     .reduce((sum, p) => sum + p.amount_paise, 0);
 
-  // Pending dues (members with notes containing 'Pending')
-  const pendingDues = store.members
-    .filter((m) => m.notes?.includes('Pending') || m.id === 'demo-member-1')
-    .reduce((sum) => sum + 100000, 0); // ₹1,000 each demo due
+  // Pending dues: calculated directly from unpaid membership balances
+  const pendingDues = store.memberships
+    .filter((m) => m.status === 'active' && (m.balance_paise || 0) > 0)
+    .reduce((sum, m) => sum + (m.balance_paise || 0), 0);
 
   // Expiring soon (within 7 days)
   const expiringSoon = getExpiringMemberships(7);
@@ -83,24 +83,30 @@ export function getExpiringMemberships(daysThreshold = 7): ExpiringMemberInfo[] 
   const now = new Date();
   const result: ExpiringMemberInfo[] = [];
 
-  // In demo dataset, members with join_date calculate dynamic expiry
-  store.members.forEach((member, i) => {
-    if (member.status !== 'active') return;
+  const memberMap = new Map(store.members.map((m) => [m.id, m]));
+  const planMap = new Map(store.plans.map((p) => [p.id, p]));
 
-    // Simulate expiry dates: some expiring in 2 days, 5 days
-    if (i % 6 === 0 || i === 3) {
-      const daysLeft = i === 3 ? 2 : 5;
-      const expDate = new Date(now.getTime() + daysLeft * 86400000);
+  store.memberships.forEach((ms) => {
+    if (ms.status !== 'active') return;
+    const member = memberMap.get(ms.member_id);
+    if (!member || member.status === 'archived') return;
+
+    const expDate = new Date(ms.end_date);
+    const diffMs = expDate.getTime() - now.getTime();
+    const daysLeft = Math.ceil(diffMs / 86400000);
+
+    if (daysLeft >= 0 && daysLeft <= daysThreshold) {
+      const plan = planMap.get(ms.plan_id);
       result.push({
         member,
         daysRemaining: daysLeft,
-        planName: i % 2 === 0 ? 'Monthly Standard' : 'Quarterly Value',
+        planName: plan?.name || 'Standard Plan',
         expiryDate: expDate.toISOString().slice(0, 10),
       });
     }
   });
 
-  return result.filter((item) => item.daysRemaining <= daysThreshold);
+  return result.sort((a, b) => a.daysRemaining - b.daysRemaining);
 }
 
 /**

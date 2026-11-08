@@ -201,6 +201,10 @@ export default function MemberListPage() {
                         ? 'bg-white/[0.04] text-zinc-400 border border-white/[0.08]'
                         : isExpired
                         ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                        : member.status === 'pending'
+                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                        : member.status === 'paused'
+                        ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
                         : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                     }`}
                   >
