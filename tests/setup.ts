@@ -1,4 +1,8 @@
 import '@testing-library/jest-dom';
+import { useAuthStore } from '@/stores/authStore';
+
+// In unit tests, run against in-memory state
+useAuthStore.setState({ isDemoMode: true });
 
 // Polyfill localStorage for Node 22 / vitest environments
 if (typeof window !== 'undefined') {

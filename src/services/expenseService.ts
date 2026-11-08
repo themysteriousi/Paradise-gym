@@ -1,5 +1,6 @@
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useDemoStore } from '@/stores/demoStore';
+import { useAuthStore } from '@/stores/authStore';
 import type {
   DbExpense,
   DbPartnerTransaction,
@@ -60,7 +61,7 @@ export async function recordExpense(
     return { success: false, error: 'Expense amount must be greater than zero' };
   }
 
-  const isDemoMode = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder');
+  const isDemoMode = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
 
   if (isDemoMode) {
     const now = new Date().toISOString();
@@ -109,7 +110,7 @@ export async function recordExpense(
  * Retrieve all operating expenses for gym
  */
 export async function getExpenses(gymId: string): Promise<DbExpense[]> {
-  const isDemoMode = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder');
+  const isDemoMode = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
 
   if (isDemoMode) {
     return useDemoStore.getState().expenses;
@@ -168,7 +169,7 @@ export async function recordPartnerTransaction(
     return { success: false, error: 'Transaction amount must be greater than zero' };
   }
 
-  const isDemoMode = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder');
+  const isDemoMode = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
 
   if (isDemoMode) {
     const txRecord: DbPartnerTransaction = {
@@ -212,7 +213,7 @@ export async function recordPartnerTransaction(
  * Retrieve all partner transactions
  */
 export async function getPartnerTransactions(gymId: string): Promise<DbPartnerTransaction[]> {
-  const isDemoMode = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder');
+  const isDemoMode = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
 
   if (isDemoMode) {
     return useDemoStore.getState().partnerTransactions;

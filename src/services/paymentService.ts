@@ -1,5 +1,6 @@
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useDemoStore } from '@/stores/demoStore';
+import { useAuthStore } from '@/stores/authStore';
 import type { DbPayment, DbRefund, PaymentMethod } from '@/types/database';
 
 export interface OutstandingCharge {
@@ -156,7 +157,7 @@ export function recordPayment(input: RecordPaymentInput): Promise<{ success: boo
     }
   }
 
-  const isDemoMode = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder');
+  const isDemoMode = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
 
   if (isDemoMode) {
     const demoStore = useDemoStore.getState();
@@ -229,8 +230,11 @@ export function recordPayment(input: RecordPaymentInput): Promise<{ success: boo
           paid_at: now,
         }));
 
-        const { data, error } = await supabase.from('payments').insert(records).select('id');
+        const { data, error } = await supabase.from('payments').insert(records).select('*');
         if (error) throw error;
+        if (data) {
+          data.forEach((p) => useDemoStore.getState().recordPayment(p as DbPayment));
+        }
         return { success: true, paymentId: data?.[0]?.id };
       }
 
@@ -244,9 +248,12 @@ export function recordPayment(input: RecordPaymentInput): Promise<{ success: boo
         reference: input.reference || null,
         note: input.note || null,
         paid_at: now,
-      }).select('id').single();
+      }).select('*').single();
 
       if (error) throw error;
+      if (data) {
+        useDemoStore.getState().recordPayment(data as DbPayment);
+      }
       return { success: true, paymentId: data.id };
     } catch (err: unknown) {
       return { success: false, error: err instanceof Error ? err.message : 'Failed to record payment' };
@@ -287,7 +294,7 @@ export function getPaymentSummary(payments: DbPayment[]): PaymentSummary {
  * Fetch payments for a gym
  */
 export async function getPayments(gymId: string): Promise<DbPayment[]> {
-  const isDemoMode = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder');
+  const isDemoMode = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
 
   if (isDemoMode) {
     return useDemoStore.getState().payments;
@@ -345,7 +352,7 @@ export async function processRefund(
     return { success: false, error: 'Refund amount must be greater than zero' };
   }
 
-  const isDemoMode = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder');
+  const isDemoMode = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
 
   if (isDemoMode) {
     const demoStore = useDemoStore.getState();
@@ -416,7 +423,7 @@ export async function correctPayment(
     return { success: false, error: 'Corrected payment amount must be greater than zero' };
   }
 
-  const isDemoMode = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder');
+  const isDemoMode = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
 
   if (isDemoMode) {
     const demoStore = useDemoStore.getState();

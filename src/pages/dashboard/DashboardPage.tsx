@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useAuthStore } from '@/stores/authStore';
+import { useDemoStore } from '@/stores/demoStore';
 import { useUiStore } from '@/stores/uiStore';
 import {
   computeDashboardMetrics,
@@ -34,9 +35,13 @@ export default function DashboardPage() {
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
   const [renewingMember, setRenewingMember] = useState<ExpiringMemberInfo | null>(null);
 
-  const metrics = useMemo(() => computeDashboardMetrics(), []);
-  const expiringMembers = useMemo(() => getExpiringMemberships(7), []);
-  const activityFeed = useMemo(() => getRecentActivityFeed(8), []);
+  const members = useDemoStore((s) => s.members);
+  const payments = useDemoStore((s) => s.payments);
+  const attendance = useDemoStore((s) => s.attendance);
+
+  const metrics = useMemo(() => computeDashboardMetrics(), [members, payments, attendance]);
+  const expiringMembers = useMemo(() => getExpiringMemberships(7), [members]);
+  const activityFeed = useMemo(() => getRecentActivityFeed(8), [payments, attendance, members]);
 
   const handleSendExpiryReminder = (item: ExpiringMemberInfo) => {
     const text = whatsappService.formatExpiryReminder({

@@ -7,7 +7,8 @@ import {
 } from '@/lib/db/indexedDB';
 import { useOfflineStore } from '@/stores/offlineStore';
 import { useDemoStore } from '@/stores/demoStore';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { useAuthStore } from '@/stores/authStore';
 import type { DbAttendance } from '@/types/database';
 
 export type { OfflineQueueItem };
@@ -60,7 +61,7 @@ export async function getPendingOfflineQueue(): Promise<OfflineQueueItem[]> {
  */
 export async function processOfflineSync(): Promise<SyncResult> {
   const offlineStore = useOfflineStore.getState();
-  const isDemoMode = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder');
+  const isDemoMode = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
 
   offlineStore.setIsSyncing(true);
 

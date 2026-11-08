@@ -32,3 +32,10 @@ test-results/
 playwright-report/
 blob-report/
 
+# Agent & local tools
+.agents/
+.codex/
+.github/hooks/
+ECC/
+
+

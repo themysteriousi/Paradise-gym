@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { DbPartner, DbGym } from '@/types/database';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { dataSyncService } from '@/services/dataSyncService';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -17,7 +18,7 @@ interface AuthState {
 }
 
 export const DEFAULT_GYM: DbGym = {
-  id: 'gym-default-001',
+  id: '00000000-0000-0000-0000-000000000001',
   name: 'Paradise Gym',
   address: '123 Fitness Street, Near Civil Lines',
   phone: '9876543210',
@@ -75,8 +76,17 @@ async function resolvePartnerAndGym(user: {
     user.email?.split('@')[0] ||
     'Partner';
 
-  const fallbackGymId = 'gym-' + user.id.slice(0, 8);
-  const fallbackPartnerId = 'partner-' + user.id.slice(0, 8);
+  // Check if an existing gym row exists in Supabase
+  let existingGymId = DEFAULT_GYM.id;
+  try {
+    const { data: gymRow } = await supabase.from('gym').select('id').limit(1).maybeSingle();
+    if (gymRow?.id) {
+      existingGymId = gymRow.id;
+    }
+  } catch (_) {}
+
+  const fallbackGymId = existingGymId;
+  const fallbackPartnerId = user.id;
 
   const fallbackPartner: DbPartner = {
     id: fallbackPartnerId,
@@ -174,22 +184,30 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       isInitialized: false,
 
-      setPartner: (partner, gym) =>
+      setPartner: (partner, gym) => {
+        const resolvedGym =
+          gym && gym.id === partner.gym_id
+            ? gym
+            : {
+                ...DEFAULT_GYM,
+                id: partner.gym_id,
+                name: gym?.name || DEFAULT_GYM.name,
+              };
+
+        // Sync live data from Supabase into store
+        if (partner.gym_id) {
+          dataSyncService.syncGymData(partner.gym_id).catch(() => {});
+        }
+
         set({
           isAuthenticated: true,
           isDemoMode: false,
           currentPartner: partner,
-          currentGym:
-            gym && gym.id === partner.gym_id
-              ? gym
-              : {
-                  ...DEFAULT_GYM,
-                  id: partner.gym_id,
-                  name: gym?.name || DEFAULT_GYM.name,
-                },
+          currentGym: resolvedGym,
           isLoading: false,
           isInitialized: true,
-        }),
+        });
+      },
 
       enableDemoMode: () =>
         set({
@@ -253,14 +271,7 @@ export const useAuthStore = create<AuthState>()(
             if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
               if (session?.user) {
                 const { partner, gym } = await resolvePartnerAndGym(session.user);
-                set({
-                  isAuthenticated: true,
-                  isDemoMode: false,
-                  currentPartner: partner,
-                  currentGym: gym,
-                  isLoading: false,
-                  isInitialized: true,
-                });
+                get().setPartner(partner, gym);
               }
             } else if (event === 'SIGNED_OUT') {
               set({
@@ -280,14 +291,7 @@ export const useAuthStore = create<AuthState>()(
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user) {
             const { partner, gym } = await resolvePartnerAndGym(session.user);
-            set({
-              isAuthenticated: true,
-              isDemoMode: false,
-              currentPartner: partner,
-              currentGym: gym,
-              isLoading: false,
-              isInitialized: true,
-            });
+            get().setPartner(partner, gym);
           } else {
             set({
               isAuthenticated: false,

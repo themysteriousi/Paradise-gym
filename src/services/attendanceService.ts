@@ -1,5 +1,6 @@
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useDemoStore } from '@/stores/demoStore';
+import { useAuthStore } from '@/stores/authStore';
 import { validateQrToken } from './qrService';
 import type { DbAttendance, DbMember, AttendanceMethod } from '@/types/database';
 
@@ -71,7 +72,7 @@ export function checkRecentCheckIn(
 export async function processMemberCheckIn(
   input: ProcessCheckInInput
 ): Promise<CheckInResult> {
-  const isDemoMode = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder');
+  const isDemoMode = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
   let member: DbMember | undefined;
 
   // 1. Resolve Member

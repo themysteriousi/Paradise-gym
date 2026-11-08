@@ -1,5 +1,6 @@
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useDemoStore } from '@/stores/demoStore';
+import { useAuthStore } from '@/stores/authStore';
 import type { DbQrToken, DbMember } from '@/types/database';
 
 export interface GenerateQrTokenOptions {
@@ -57,7 +58,7 @@ export function isTokenZeroPII(
  * Get active QR token for a member if one exists
  */
 export function getActiveTokenForMember(memberId: string): DbQrToken | null {
-  const isDemoMode = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder');
+  const isDemoMode = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
 
   if (isDemoMode) {
     const tokens = useDemoStore.getState().qrTokens;
@@ -83,7 +84,7 @@ export async function generateMemberQrToken(
 
   const tokenString = createOpaqueTokenString();
 
-  const isDemoMode = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder');
+  const isDemoMode = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
 
   if (isDemoMode) {
     const demoStore = useDemoStore.getState();
@@ -147,7 +148,7 @@ export async function validateQrToken(tokenString: string): Promise<ValidateQrTo
     return { isValid: false, error: 'Invalid or unrecognized QR token format' };
   }
 
-  const isDemoMode = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder');
+  const isDemoMode = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
 
   if (isDemoMode) {
     const demoStore = useDemoStore.getState();
@@ -222,7 +223,7 @@ export async function revokeQrToken(
   tokenString: string,
   revokedBy: string
 ): Promise<{ success: boolean; error?: string }> {
-  const isDemoMode = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder');
+  const isDemoMode = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
 
   if (isDemoMode) {
     useDemoStore.getState().revokeQrTokenByString(tokenString, revokedBy);

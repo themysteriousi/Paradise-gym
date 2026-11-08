@@ -173,7 +173,9 @@ export const memberService = {
       console.error('Supabase member insertion error:', error);
       throw new Error(error.message || error.details || 'Failed to insert member into database.');
     }
-    return data as DbMember;
+    const created = data as DbMember;
+    useDemoStore.getState().addMember(created);
+    return created;
   },
 
   async updateMember(id: string, input: UpdateMemberInput): Promise<DbMember> {
@@ -226,7 +228,12 @@ export const memberService = {
       console.error('Supabase updateMember error:', error);
       throw new Error(error.message || error.details || 'Failed to update member in database.');
     }
-    return data as DbMember;
+    const updated = data as DbMember;
+    const store = useDemoStore.getState();
+    useDemoStore.setState({
+      members: store.members.map((m) => (m.id === id ? updated : m)),
+    });
+    return updated;
   },
 
   async archiveMember(id: string, partnerId: string): Promise<void> {
