@@ -11,6 +11,7 @@ interface MemberFormModalProps {
 
 export default function MemberFormModal({ isOpen, onClose, onMemberCreated }: MemberFormModalProps) {
   const currentGym = useAuthStore((s) => s.currentGym);
+  const currentPartner = useAuthStore((s) => s.currentPartner);
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -24,10 +25,30 @@ export default function MemberFormModal({ isOpen, onClose, onMemberCreated }: Me
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentGym) return;
+    const gymId = currentPartner?.gym_id || currentGym?.id;
+    if (!gymId) {
+      setErrorMsg('Gym configuration is missing. Please refresh or re-login.');
+      return;
+    }
 
-    if (!fullName.trim() || !phone.trim()) {
-      setErrorMsg('Full Name and Phone Number are required.');
+    const trimmedName = fullName.trim();
+    const rawPhone = phone.trim();
+
+    if (!trimmedName || !rawPhone) {
+      setErrorMsg('Full Name and Mobile Number are required.');
+      return;
+    }
+
+    // Sanitize phone number (e.g. +91 7984889083, +917984889083, 07984889083 -> 7984889083)
+    let cleanPhone = rawPhone.replace(/\D/g, '');
+    if (cleanPhone.length === 12 && cleanPhone.startsWith('91')) {
+      cleanPhone = cleanPhone.slice(2);
+    } else if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) {
+      cleanPhone = cleanPhone.slice(1);
+    }
+
+    if (cleanPhone.length !== 10) {
+      setErrorMsg('Please enter a valid 10-digit mobile number.');
       return;
     }
 
@@ -36,9 +57,9 @@ export default function MemberFormModal({ isOpen, onClose, onMemberCreated }: Me
       setErrorMsg('');
 
       const input: CreateMemberInput = {
-        gymId: currentGym.id,
-        fullName: fullName.trim(),
-        phone: phone.trim(),
+        gymId,
+        fullName: trimmedName,
+        phone: cleanPhone,
         email: email.trim() || null,
         gender,
         dateOfBirth: dateOfBirth || null,
@@ -49,7 +70,17 @@ export default function MemberFormModal({ isOpen, onClose, onMemberCreated }: Me
       onMemberCreated();
       onClose();
     } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : 'Failed to register member.');
+      console.error('Failed to register member:', err);
+      let message = 'Failed to register member.';
+      if (err instanceof Error) {
+        message = err.message;
+      } else if (err && typeof err === 'object') {
+        const o = err as Record<string, unknown>;
+        message = (o.message as string) || (o.details as string) || (o.error_description as string) || message;
+      } else if (typeof err === 'string') {
+        message = err;
+      }
+      setErrorMsg(message);
     } finally {
       setSubmitting(false);
     }
@@ -104,7 +135,7 @@ export default function MemberFormModal({ isOpen, onClose, onMemberCreated }: Me
                 required
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="10-digit mobile"
+                placeholder="10-digit mobile (e.g. 9876543210)"
                 className="w-full pl-9 pr-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500 tabular-nums"
               />
             </div>

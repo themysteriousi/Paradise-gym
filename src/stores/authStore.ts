@@ -13,7 +13,7 @@ interface AuthState {
 }
 
 const DEMO_GYM: DbGym = {
-  id: '00000000-0000-0000-0000-000000000001',
+  id: 'demo-gym-001',
   name: 'Paradise Gym',
   address: '123 Fitness Street, Near Civil Lines',
   phone: '9876543210',
@@ -45,12 +45,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   currentGym: null,
   isLoading: false,
 
-  setPartner: (partner, gym = DEMO_GYM) =>
+  setPartner: (partner, gym) =>
     set({
       isAuthenticated: true,
       isDemoMode: false,
       currentPartner: partner,
-      currentGym: gym,
+      currentGym: gym && gym.id === partner.gym_id ? gym : {
+        ...DEMO_GYM,
+        id: partner.gym_id,
+        name: gym?.name || DEMO_GYM.name,
+      },
       isLoading: false,
     }),
 

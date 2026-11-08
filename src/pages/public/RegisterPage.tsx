@@ -22,8 +22,24 @@ export default function RegisterPage({ gymId = 'demo-gym-001', onSuccess }: Regi
     e.preventDefault();
     setErrorMsg('');
 
-    if (!fullName.trim() || !phone.trim()) {
-      setErrorMsg('Full Name and Phone Number are required.');
+    const trimmedName = fullName.trim();
+    const rawPhone = phone.trim();
+
+    if (!trimmedName || !rawPhone) {
+      setErrorMsg('Full Name and Mobile Number are required.');
+      return;
+    }
+
+    // Sanitize phone number (strip +91, spaces, dashes)
+    let cleanPhone = rawPhone.replace(/\D/g, '');
+    if (cleanPhone.length === 12 && cleanPhone.startsWith('91')) {
+      cleanPhone = cleanPhone.slice(2);
+    } else if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) {
+      cleanPhone = cleanPhone.slice(1);
+    }
+
+    if (cleanPhone.length !== 10) {
+      setErrorMsg('Please enter a valid 10-digit mobile number.');
       return;
     }
 
@@ -31,8 +47,8 @@ export default function RegisterPage({ gymId = 'demo-gym-001', onSuccess }: Regi
       setLoading(true);
       await registrationService.submitRegistration({
         gymId,
-        fullName: fullName.trim(),
-        phone: phone.trim(),
+        fullName: trimmedName,
+        phone: cleanPhone,
         selectedPlanId,
         email: email.trim() || null,
         gender,
@@ -42,7 +58,15 @@ export default function RegisterPage({ gymId = 'demo-gym-001', onSuccess }: Regi
       setSubmitted(true);
       if (onSuccess) onSuccess();
     } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : 'Registration failed. Please check your details.');
+      console.error('Failed to submit registration:', err);
+      let message = 'Registration failed. Please check your details.';
+      if (err instanceof Error) {
+        message = err.message;
+      } else if (err && typeof err === 'object') {
+        const o = err as Record<string, unknown>;
+        message = (o.message as string) || (o.details as string) || (o.error_description as string) || message;
+      }
+      setErrorMsg(message);
     } finally {
       setLoading(false);
     }

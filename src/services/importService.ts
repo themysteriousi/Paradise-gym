@@ -123,6 +123,7 @@ export const importService = {
   async executeBatchImport(gymId: string, rows: ValidatedImportRow[]): Promise<number> {
     const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
     const now = new Date().toISOString();
+    const today = now.slice(0, 10);
 
     if (isDemo) {
       const newMembers: DbMember[] = rows.map((r, i) => ({
@@ -137,7 +138,7 @@ export const importService = {
         emergency_contact: null,
         photo_url: null,
         status: 'active',
-        join_date: now,
+        join_date: today,
         notes: r.notes || 'Imported via CSV',
         archived_at: null,
         archived_by: null,
@@ -159,11 +160,14 @@ export const importService = {
       date_of_birth: r.dateOfBirth || null,
       notes: r.notes || 'Imported via CSV',
       status: 'active',
-      join_date: now,
+      join_date: today,
     }));
 
     const { data, error } = await supabase.from('members').insert(payload).select('id');
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase executeBatchImport error:', error);
+      throw new Error(error.message || error.details || 'Failed to import members.');
+    }
     return (data || []).length;
   },
 };

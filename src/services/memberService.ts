@@ -79,7 +79,10 @@ export const memberService = {
     }
 
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase getMembers error:', error);
+      throw new Error(error.message || error.details || 'Failed to fetch members.');
+    }
     return (data || []) as DbMember[];
   },
 
@@ -98,7 +101,8 @@ export const memberService = {
 
     if (error) {
       if (error.code === 'PGRST116') return null;
-      throw error;
+      console.error('Supabase getMemberById error:', error);
+      throw new Error(error.message || error.details || 'Failed to fetch member.');
     }
     return data as DbMember;
   },
@@ -106,21 +110,36 @@ export const memberService = {
   async createMember(input: CreateMemberInput): Promise<DbMember> {
     const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
     const now = new Date().toISOString();
+    const today = now.slice(0, 10);
+
+    // Normalize phone number (strip +91, spaces, leading 0)
+    let cleanPhone = input.phone.trim().replace(/\D/g, '');
+    if (cleanPhone.length === 12 && cleanPhone.startsWith('91')) {
+      cleanPhone = cleanPhone.slice(2);
+    } else if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) {
+      cleanPhone = cleanPhone.slice(1);
+    }
+    const finalPhone = cleanPhone.length === 10 ? cleanPhone : input.phone.trim();
+
+    // Ensure valid date format YYYY-MM-DD for PostgreSQL DATE type
+    const sanitizedDob = input.dateOfBirth && input.dateOfBirth.trim()
+      ? input.dateOfBirth.trim().slice(0, 10)
+      : null;
 
     const newRecord: DbMember = {
       id: isDemo ? `demo-member-${Date.now()}` : crypto.randomUUID(),
       gym_id: input.gymId,
-      full_name: input.fullName,
-      phone: input.phone,
-      email: input.email || null,
-      date_of_birth: input.dateOfBirth || null,
+      full_name: input.fullName.trim(),
+      phone: finalPhone,
+      email: input.email ? input.email.trim() : null,
+      date_of_birth: sanitizedDob,
       gender: input.gender || null,
       address: input.address || null,
       emergency_contact: input.emergencyContact || null,
       photo_url: null,
       status: 'active',
-      join_date: now,
-      notes: input.notes || null,
+      join_date: today,
+      notes: input.notes ? input.notes.trim() : null,
       archived_at: null,
       archived_by: null,
       created_at: now,
@@ -150,7 +169,10 @@ export const memberService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase member insertion error:', error);
+      throw new Error(error.message || error.details || 'Failed to insert member into database.');
+    }
     return data as DbMember;
   },
 
@@ -200,7 +222,10 @@ export const memberService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase updateMember error:', error);
+      throw new Error(error.message || error.details || 'Failed to update member in database.');
+    }
     return data as DbMember;
   },
 
@@ -223,6 +248,9 @@ export const memberService = {
       .update({ archived_at: now, archived_by: partnerId, status: 'archived' })
       .eq('id', id);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase archiveMember error:', error);
+      throw new Error(error.message || error.details || 'Failed to archive member in database.');
+    }
   },
 };
