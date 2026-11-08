@@ -93,7 +93,7 @@ export default function CameraScanner({
   };
 
   return (
-    <div className="relative w-full aspect-[4/3] max-w-sm mx-auto bg-slate-950 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl flex items-center justify-center">
+    <div className="relative w-full aspect-[4/3] max-w-sm mx-auto bg-[#0d0f12] rounded-xl overflow-hidden border border-white/[0.08] shadow-lg flex items-center justify-center">
       {/* Video Stream Element */}
       <video
         ref={videoRef}
@@ -106,40 +106,39 @@ export default function CameraScanner({
       <div className="absolute top-3 right-3 flex items-center space-x-2 z-20">
         <button
           onClick={toggleFacingMode}
-          className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-white border border-slate-700/60 backdrop-blur-sm transition"
+          className="p-1.5 rounded-md bg-[#14161c]/80 hover:bg-[#1a1d24] text-zinc-200 border border-white/[0.1] backdrop-blur-sm transition"
           title="Switch Camera"
         >
           <SwitchCamera className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Target Reticle / Laser Viewfinder */}
+      {/* Target Reticle / Viewfinder */}
       {hasCameraAccess && (
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
-          <div className="relative w-48 h-48 border-2 border-brand-500/80 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.3)]">
-            {/* Animated Laser Scan Line */}
-            <div className="absolute left-1 right-1 h-0.5 bg-brand-400 shadow-[0_0_10px_#22c55e] animate-pulse" />
-            <Scan className="w-8 h-8 text-brand-400/40" />
+          <div className="relative w-44 h-44 border border-white/40 rounded-lg flex items-center justify-center">
+            {/* Clean Reticle */}
+            <Scan className="w-7 h-7 text-white/30" />
           </div>
-          <p className="absolute bottom-4 text-[11px] font-semibold text-white/90 bg-slate-900/80 px-3 py-1 rounded-full border border-slate-700/60 backdrop-blur-sm">
-            Align QR Pass inside frame
+          <p className="absolute bottom-3 text-[10px] font-mono text-zinc-300 bg-[#14161c]/90 px-2.5 py-1 rounded border border-white/[0.08] backdrop-blur-sm">
+            Align QR Pass inside reticle
           </p>
         </div>
       )}
 
       {/* Fallback when Camera Unavailable / Denied */}
       {hasCameraAccess === false && (
-        <div className="absolute inset-0 bg-slate-950 p-6 flex flex-col items-center justify-center text-center space-y-3 z-30">
-          <div className="p-3 bg-amber-500/10 text-amber-400 rounded-2xl border border-amber-500/20">
-            <Camera className="w-7 h-7" />
+        <div className="absolute inset-0 bg-[#0d0f12] p-6 flex flex-col items-center justify-center text-center space-y-3 z-30">
+          <div className="p-2.5 bg-white/[0.04] text-zinc-300 rounded-lg border border-white/[0.08]">
+            <Camera className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-white">Camera Standby / Unavailable</h3>
-            <p className="text-xs text-slate-400 mt-1 max-w-xs">
+            <h3 className="text-xs font-semibold text-zinc-200">Camera Standby</h3>
+            <p className="text-[11px] text-zinc-400 mt-1 max-w-xs">
               {errorMessage || 'Allow camera permissions or use manual search check-in below.'}
             </p>
           </div>
-          <div className="text-[11px] text-slate-400 flex items-center space-x-1">
+          <div className="text-[10px] text-zinc-500 font-mono flex items-center space-x-1">
             <AlertCircle className="w-3.5 h-3.5" />
             <span>Fast desk manual check-in active below</span>
           </div>

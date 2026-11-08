@@ -14,7 +14,7 @@ import {
   Search,
   UserCheck,
   AlertCircle,
-  Flame,
+  CheckCircle2,
 } from 'lucide-react';
 
 export default function AttendancePage() {
@@ -99,48 +99,48 @@ export default function AttendancePage() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3.5">
       {/* Top Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-black text-white tracking-tight">QR Attendance Scanner</h1>
-          <p className="text-xs text-slate-400">Desk check-in & automated attendance logs</p>
+          <h1 className="text-base font-semibold text-zinc-100 tracking-tight">Attendance Desk</h1>
+          <p className="text-[11px] font-mono text-zinc-500">QR scanning & arrival logs</p>
         </div>
-        <div className="flex items-center space-x-1.5 px-3 py-1.5 bg-brand-500/10 border border-brand-500/20 text-brand-400 font-bold text-xs rounded-xl">
-          <Flame className="w-4 h-4 text-brand-500" />
-          <span>{todaysLogs.length} Checked In Today</span>
+        <div className="flex items-center space-x-1.5 px-2.5 py-1 bg-white/[0.04] border border-white/[0.08] text-zinc-300 font-mono text-xs rounded-md">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+          <span>{todaysLogs.length} checked in today</span>
         </div>
       </div>
 
       {/* Mode Switcher */}
-      <div className="grid grid-cols-2 gap-2 bg-slate-900 p-1.5 rounded-2xl border border-slate-800">
+      <div className="grid grid-cols-2 gap-1.5 bg-[#14161c] p-1 rounded-lg border border-white/[0.08]">
         <button
           onClick={() => setActiveMode('camera')}
-          className={`py-2 text-xs font-bold rounded-xl flex items-center justify-center space-x-1.5 transition ${
+          className={`py-1.5 text-xs font-medium rounded-md flex items-center justify-center space-x-1.5 transition ${
             activeMode === 'camera'
-              ? 'bg-brand-500 text-slate-950 shadow-sm'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-white/[0.08] text-white shadow-sm'
+              : 'text-zinc-400 hover:text-zinc-200'
           }`}
         >
-          <QrCode className="w-4 h-4" />
+          <QrCode className="w-3.5 h-3.5" />
           <span>Camera Scanner</span>
         </button>
         <button
           onClick={() => setActiveMode('manual')}
-          className={`py-2 text-xs font-bold rounded-xl flex items-center justify-center space-x-1.5 transition ${
+          className={`py-1.5 text-xs font-medium rounded-md flex items-center justify-center space-x-1.5 transition ${
             activeMode === 'manual'
-              ? 'bg-brand-500 text-slate-950 shadow-sm'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-white/[0.08] text-white shadow-sm'
+              : 'text-zinc-400 hover:text-zinc-200'
           }`}
         >
-          <Search className="w-4 h-4" />
-          <span>Manual Search Desk</span>
+          <Search className="w-3.5 h-3.5" />
+          <span>Manual Search</span>
         </button>
       </div>
 
       {/* Error Banner */}
       {errorMessage && (
-        <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-xs flex items-center space-x-2">
+        <div className="p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-lg text-rose-300 font-mono text-xs flex items-center space-x-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{errorMessage}</span>
         </div>
@@ -157,33 +157,33 @@ export default function AttendancePage() {
       )}
 
       {/* Manual Search Check-In Section */}
-      <div className="bg-slate-900 border border-slate-800 p-4 rounded-3xl space-y-3">
+      <div className="bg-[#14161c] border border-white/[0.08] p-3.5 rounded-xl space-y-2.5">
         <div className="relative">
-          <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3 top-2.5 text-zinc-500" />
           <input
             type="text"
             value={manualQuery}
             onChange={(e) => setManualQuery(e.target.value)}
-            placeholder="Fast search member by name or phone to check in..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            placeholder="Search member by name or phone to check in..."
+            className="w-full bg-[#0d0f12] border border-white/[0.08] rounded-lg pl-9 pr-3.5 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-white/30"
           />
         </div>
 
         {/* Search Results */}
         {searchResults.length > 0 && (
-          <div className="space-y-2 pt-1 border-t border-slate-800/80">
+          <div className="space-y-1.5 pt-1 border-t border-white/[0.06]">
             {searchResults.map((m) => (
               <div
                 key={m.id}
-                className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between"
+                className="p-2 bg-[#0d0f12] rounded-lg border border-white/[0.06] flex items-center justify-between"
               >
                 <div>
-                  <p className="text-xs font-bold text-white">{m.full_name}</p>
-                  <p className="text-[11px] text-slate-400">{m.phone}</p>
+                  <p className="text-xs font-medium text-zinc-100">{m.full_name}</p>
+                  <p className="text-[11px] font-mono text-zinc-500">{m.phone}</p>
                 </div>
                 <button
                   onClick={() => handleManualCheckIn(m.id)}
-                  className="px-3 py-1.5 bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold text-xs rounded-lg transition flex items-center space-x-1"
+                  className="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs rounded-md transition flex items-center space-x-1"
                 >
                   <UserCheck className="w-3.5 h-3.5" />
                   <span>Check In</span>
@@ -195,18 +195,18 @@ export default function AttendancePage() {
       </div>
 
       {/* Today's Live Feed */}
-      <div className="bg-slate-900 border border-slate-800 p-4 rounded-3xl space-y-3">
+      <div className="bg-[#14161c] border border-white/[0.08] p-3.5 rounded-xl space-y-2.5">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-white">Today&apos;s Live Check-in Feed</h3>
-          <span className="text-[10px] text-slate-400 font-mono">
+          <h3 className="text-xs font-medium text-zinc-200">Today&apos;s Live Check-in Feed</h3>
+          <span className="text-[10px] text-zinc-500 font-mono">
             {todaysLogs.length} verified
           </span>
         </div>
 
-        <div className="space-y-2 touch-pan-y">
+        <div className="space-y-1.5 touch-pan-y">
           {todaysLogs.length === 0 ? (
-            <p className="text-xs text-slate-500 italic py-2 text-center">
-              No check-ins recorded yet today. Scan a QR code or use manual check-in.
+            <p className="text-xs text-zinc-500 italic py-2 text-center">
+              No check-ins recorded yet today. Scan a QR code or use manual search.
             </p>
           ) : (
             todaysLogs.map((log) => {
@@ -219,14 +219,14 @@ export default function AttendancePage() {
               return (
                 <div
                   key={log.id}
-                  className="p-3 bg-slate-950 rounded-2xl border border-slate-800/80 flex items-center justify-between"
+                  className="p-2.5 bg-[#0d0f12] rounded-lg border border-white/[0.06] flex items-center justify-between"
                 >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center font-bold text-slate-300 text-xs">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="w-7 h-7 rounded-md bg-white/[0.04] border border-white/[0.08] flex items-center justify-center font-mono font-bold text-zinc-300 text-xs">
                       {member?.full_name?.charAt(0) || 'M'}
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-white">
+                      <p className="text-xs font-medium text-zinc-100">
                         {member?.full_name || 'Member'}
                       </p>
                       <p className="text-[11px] text-slate-400">{member?.phone}</p>
@@ -234,13 +234,13 @@ export default function AttendancePage() {
                   </div>
 
                   <div className="text-right">
-                    <span className="text-xs font-mono font-bold text-slate-300">{time}</span>
+                    <span className="text-xs font-mono text-zinc-300">{time}</span>
                     <div className="mt-0.5">
                       <span
-                        className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                        className={`text-[9px] font-mono uppercase px-1.5 py-0.5 rounded ${
                           log.method === 'qr_scan'
-                            ? 'bg-brand-500/10 text-brand-400 border border-brand-500/20'
-                            : 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                            : 'bg-white/[0.04] text-zinc-400 border border-white/[0.08]'
                         }`}
                       >
                         {log.method === 'qr_scan' ? 'QR Pass' : 'Desk'}

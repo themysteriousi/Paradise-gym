@@ -20,42 +20,42 @@ export default function AppShell({ children }: AppShellProps) {
   }, []);
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-slate-950 text-slate-100 flex flex-col selection:bg-brand-500/30 selection:text-white">
+    <div className="min-h-screen min-h-[100dvh] bg-[#0d0f12] text-zinc-100 flex flex-col selection:bg-emerald-500/20 selection:text-white">
       <Header />
 
       {/* Sticky Offline / Sync Status Banner */}
       {(!isOnline || pendingQueueCount > 0) && (
         <div className="fixed top-[calc(3.5rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 max-w-lg mx-auto px-4 pt-1 pointer-events-none">
           <div
-            className={`pointer-events-auto px-3.5 py-2 rounded-2xl flex items-center justify-between text-xs font-semibold shadow-xl border ${
+            className={`pointer-events-auto px-3.5 py-2 rounded-xl flex items-center justify-between text-xs font-medium shadow-lg border ${
               !isOnline
-                ? 'bg-amber-950/90 border-amber-500/40 text-amber-300 backdrop-blur-md'
+                ? 'bg-[#14161c] border-amber-500/30 text-amber-300 backdrop-blur-md'
                 : isSyncing
-                ? 'bg-sky-950/90 border-sky-500/40 text-sky-300 backdrop-blur-md'
-                : 'bg-brand-950/90 border-brand-500/40 text-brand-300 backdrop-blur-md'
+                ? 'bg-[#14161c] border-white/[0.15] text-zinc-200 backdrop-blur-md'
+                : 'bg-[#14161c] border-emerald-500/30 text-emerald-300 backdrop-blur-md'
             }`}
           >
             <div className="flex items-center space-x-2">
               {!isOnline ? (
                 <WifiOff className="w-4 h-4 text-amber-400 shrink-0" />
               ) : isSyncing ? (
-                <RefreshCw className="w-4 h-4 text-sky-400 animate-spin shrink-0" />
+                <RefreshCw className="w-4 h-4 text-zinc-300 animate-spin shrink-0" />
               ) : (
-                <CloudCheck className="w-4 h-4 text-brand-400 shrink-0" />
+                <CloudCheck className="w-4 h-4 text-emerald-400 shrink-0" />
               )}
-              <span className="font-medium text-[11.5px]">
+              <span className="font-mono text-[11px]">
                 {!isOnline
-                  ? `Offline Mode Active • ${pendingQueueCount} check-in(s) queued`
+                  ? `Offline • ${pendingQueueCount} check-in(s) queued`
                   : isSyncing
-                  ? `Syncing ${pendingQueueCount} items to cloud...`
-                  : `${pendingQueueCount} queued items ready to sync`}
+                  ? `Syncing ${pendingQueueCount} items...`
+                  : `${pendingQueueCount} queued items ready`}
               </span>
             </div>
 
             {isOnline && pendingQueueCount > 0 && !isSyncing && (
               <button
                 onClick={() => processOfflineSync()}
-                className="px-2.5 py-1 bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold rounded-xl text-[10px] transition tap-bounce shadow-sm"
+                className="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-md text-[11px] transition shadow-sm"
               >
                 Sync Now
               </button>

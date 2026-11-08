@@ -25,7 +25,7 @@ body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   -webkit-tap-highlight-color: transparent;
-  background-color: #020617; /* slate-950 */
+  background-color: #0d0f12; /* cast iron matte */
 }
 
 #root {
@@ -87,16 +87,17 @@ input, textarea {
 
 /* Focus visibility for accessibility */
 :focus-visible {
-  outline: 2px solid #10b981;
+  outline: 2px solid rgba(255, 255, 255, 0.3);
   outline-offset: 2px;
 }
 
 /* Tactile instant feedback on tap for buttons and cards */
 .tap-bounce {
-  transition: transform 75ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 80ms ease, transform 80ms ease;
 }
 .tap-bounce:active {
-  transform: scale(0.97);
+  opacity: 0.85;
+  transform: scale(0.99);
 }
 
 /* Hardware accelerated layer without 3D perspective scroll traps */

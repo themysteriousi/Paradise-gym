@@ -21,7 +21,7 @@ export default function BottomNav() {
   return (
     <nav
       onContextMenu={(e) => e.preventDefault()}
-      className="fixed bottom-0 left-0 right-0 bg-slate-950/95 backdrop-blur-lg border-t border-slate-800/80 z-40 pb-[max(0.375rem,env(safe-area-inset-bottom))] select-none"
+      className="fixed bottom-0 left-0 right-0 bg-[#0d0f12]/95 backdrop-blur-md border-t border-white/[0.08] z-40 pb-[max(0.375rem,env(safe-area-inset-bottom))] select-none"
     >
       <div className="max-w-lg mx-auto flex items-center justify-around px-2 py-1">
         {NAV_ITEMS.map(({ tab, label, icon: Icon }) => {
@@ -32,22 +32,22 @@ export default function BottomNav() {
               type="button"
               onClick={() => setActiveTab(tab)}
               onContextMenu={(e) => e.preventDefault()}
-              className={`flex flex-col items-center justify-center flex-1 py-1.5 px-1 rounded-2xl transition-all duration-100 min-h-[48px] tap-bounce select-none touch-manipulation ${
+              className={`flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-xl transition duration-150 min-h-[48px] select-none touch-manipulation ${
                 isActive
-                  ? 'text-brand-400 font-bold'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'text-zinc-100'
+                  : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
               <div
-                className={`p-1.5 rounded-xl transition-all duration-150 ${
+                className={`px-3 py-1 rounded-lg transition duration-150 ${
                   isActive
-                    ? 'bg-brand-500/15 text-brand-400 shadow-sm shadow-brand-500/10'
-                    : 'text-slate-400'
+                    ? 'bg-white/[0.08] text-white'
+                    : 'text-zinc-500'
                 }`}
               >
-                <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'stroke-[2]' : 'stroke-[1.75]'}`} />
               </div>
-              <span className={`text-[10.5px] leading-none mt-1 tracking-tight ${isActive ? 'font-bold text-brand-300' : 'font-medium'}`}>
+              <span className={`text-[10px] leading-tight mt-0.5 tracking-tight ${isActive ? 'font-medium text-zinc-200' : 'text-zinc-500'}`}>
                 {label}
               </span>
             </button>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dumbbell, ArrowRight, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
+import { Dumbbell, ArrowRight, CheckCircle2, ShieldCheck, UserCheck } from 'lucide-react';
 import { registrationService } from '@/services/registrationService';
 
 interface RegisterPageProps {
@@ -74,19 +74,19 @@ export default function RegisterPage({ gymId = 'demo-gym-001', onSuccess }: Regi
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center px-4 py-8">
-        <div className="max-w-md w-full mx-auto bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center space-y-4 shadow-2xl">
-          <div className="inline-flex p-3 bg-emerald-500/10 text-emerald-400 rounded-2xl border border-emerald-500/20">
-            <CheckCircle2 className="w-10 h-10" />
+      <div className="min-h-screen bg-[#0d0f12] text-zinc-100 flex flex-col justify-center px-4 py-8">
+        <div className="max-w-md w-full mx-auto bg-[#14161c] border border-white/[0.08] rounded-xl p-6 text-center space-y-3.5 shadow-2xl">
+          <div className="inline-flex p-2.5 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/20">
+            <CheckCircle2 className="w-8 h-8" />
           </div>
-          <h2 className="text-xl font-black text-white">Registration Submitted!</h2>
-          <p className="text-xs text-slate-300 leading-relaxed">
-            Welcome to Paradise Gym! Your request has been sent to the gym partners for verification and activation. You will receive your digital membership card shortly.
+          <h2 className="text-base font-semibold text-zinc-100">Registration Submitted</h2>
+          <p className="text-xs text-zinc-400 leading-relaxed">
+            Welcome to Paradise Gym. Your submission has been received for front-desk verification and activation. Your digital access pass will be generated shortly.
           </p>
-          <div className="pt-4">
+          <div className="pt-2">
             <button
               onClick={() => setSubmitted(false)}
-              className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl"
+              className="h-9 px-4 bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 text-xs font-medium rounded-lg border border-white/[0.06] transition"
             >
               Submit Another Registration
             </button>
@@ -97,61 +97,61 @@ export default function RegisterPage({ gymId = 'demo-gym-001', onSuccess }: Regi
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center px-4 py-8">
-      <div className="max-w-md w-full mx-auto space-y-6">
+    <div className="min-h-screen bg-[#0d0f12] text-zinc-100 flex flex-col justify-center px-4 py-8">
+      <div className="max-w-md w-full mx-auto space-y-4">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex bg-brand-500 p-3 rounded-2xl text-slate-950 shadow-lg shadow-brand-500/20">
-            <Dumbbell className="w-8 h-8 stroke-[2.5]" />
+        <div className="text-center space-y-1.5">
+          <div className="inline-flex w-10 h-10 rounded-lg bg-white/[0.04] border border-white/[0.08] text-zinc-100 items-center justify-center">
+            <Dumbbell className="w-5 h-5 stroke-[2]" />
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-white">Paradise Gym</h1>
-          <p className="text-xs text-slate-400">Member Registration Form</p>
+          <h1 className="text-lg font-semibold tracking-tight text-zinc-100">Paradise Gym</h1>
+          <p className="text-xs font-mono text-zinc-500">Member Registration Desk</p>
         </div>
 
         {/* Form Container */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-          <div className="flex items-center space-x-1.5 text-xs text-brand-500 font-bold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Join Our Fitness Community</span>
+        <div className="bg-[#14161c] border border-white/[0.08] rounded-xl p-5 shadow-xl space-y-3.5">
+          <div className="flex items-center space-x-1.5 text-xs text-zinc-400 font-mono uppercase tracking-wider">
+            <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Member Enrollment</span>
           </div>
 
           {errorMsg && (
-            <div className="p-3 bg-red-950/80 border border-red-800 text-red-200 text-xs rounded-xl">
+            <div className="p-2.5 bg-rose-500/10 border border-rose-500/20 text-rose-300 font-mono text-xs rounded-lg">
               {errorMsg}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-3.5">
+          <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Full Name *</label>
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-1">Full Name *</label>
               <input
                 type="text"
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="e.g. Sahil Varma"
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500"
+                className="w-full px-3 py-2 bg-[#0d0f12] border border-white/[0.08] rounded-lg text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-white/30"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Mobile Number (WhatsApp) *</label>
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-1">Mobile Number (WhatsApp) *</label>
               <input
                 type="tel"
                 required
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="10-digit mobile number"
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500"
+                className="w-full px-3 py-2 bg-[#0d0f12] border border-white/[0.08] rounded-lg text-sm font-mono text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-white/30"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Select Membership Plan</label>
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-1">Select Membership Plan</label>
               <select
                 value={selectedPlanId}
                 onChange={(e) => setSelectedPlanId(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-brand-500"
+                className="w-full px-3 py-2 bg-[#0d0f12] border border-white/[0.08] rounded-lg text-xs text-zinc-100 focus:outline-none focus:border-white/30"
               >
                 <option value="plan-monthly">Monthly Standard — ₹1,500/month</option>
                 <option value="plan-quarterly">Quarterly Value — ₹3,800/3 months</option>
@@ -159,13 +159,13 @@ export default function RegisterPage({ gymId = 'demo-gym-001', onSuccess }: Regi
               </select>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Gender</label>
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-1">Gender</label>
                 <select
                   value={gender}
                   onChange={(e) => setGender(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-brand-500"
+                  className="w-full px-3 py-2 bg-[#0d0f12] border border-white/[0.08] rounded-lg text-xs text-zinc-100 focus:outline-none focus:border-white/30"
                 >
                   <option value="male">Male</option>
                   <option value="female">Female</option>
@@ -174,44 +174,43 @@ export default function RegisterPage({ gymId = 'demo-gym-001', onSuccess }: Regi
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Date of Birth</label>
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-1">Date of Birth</label>
                 <input
                   type="date"
                   value={dateOfBirth}
                   onChange={(e) => setDateOfBirth(e.target.value)}
-                  className="w-full px-2 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-brand-500"
+                  className="w-full px-2 py-2 bg-[#0d0f12] border border-white/[0.08] rounded-lg text-xs text-zinc-100 focus:outline-none focus:border-white/30 font-mono"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Email Address (Optional)</label>
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-1">Email Address (Optional)</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="member@gmail.com"
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500"
+                className="w-full px-3 py-2 bg-[#0d0f12] border border-white/[0.08] rounded-lg text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-white/30"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-slate-950 font-bold text-sm rounded-xl transition duration-150 flex items-center justify-center space-x-2 shadow-lg shadow-brand-500/10 active:scale-[0.98]"
+              className="w-full h-10 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-semibold text-xs rounded-lg transition flex items-center justify-center space-x-1.5"
             >
               <span>{loading ? 'Submitting...' : 'Submit Registration'}</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </form>
 
-          <div className="pt-2 flex items-center justify-center space-x-1.5 text-[11px] text-slate-500">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Your information is safely handled by Paradise Gym</span>
+          <div className="pt-1 flex items-center justify-center space-x-1.5 text-[10px] text-zinc-500 font-mono">
+            <ShieldCheck className="w-3.5 h-3.5 text-zinc-500" />
+            <span>Encrypted transmission • Paradise Gym Terminal</span>
           </div>
         </div>
       </div>
     </div>
   );
 }
-

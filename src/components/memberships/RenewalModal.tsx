@@ -73,36 +73,36 @@ export default function RenewalModal({ member, isOpen, onClose, onRenewed }: Ren
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-sm">
-      <div className="bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div className="flex items-center space-x-2 text-brand-500">
-            <RefreshCw className="w-5 h-5 stroke-[2.5]" />
-            <h2 className="text-base font-bold text-white">Renew Membership</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150">
+      <div className="bg-[#14161c] border border-white/[0.1] rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+        <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
+          <div className="flex items-center space-x-2 text-zinc-100">
+            <RefreshCw className="w-4 h-4 stroke-2 text-emerald-400" />
+            <h2 className="text-sm font-semibold text-zinc-100">Renew Membership</h2>
           </div>
-          <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-white rounded-lg">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="p-1 text-zinc-400 hover:text-white rounded-md hover:bg-white/[0.06] transition">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs">
-          <p className="text-slate-400">Member</p>
-          <p className="text-sm font-bold text-white">{member.full_name}</p>
+        <div className="bg-[#0d0f12] p-2.5 rounded-lg border border-white/[0.06] text-xs">
+          <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider">Member</p>
+          <p className="text-sm font-semibold text-zinc-100 mt-0.5">{member.full_name}</p>
         </div>
 
         {errorMsg && (
-          <div className="p-3 bg-red-950/80 border border-red-800 text-red-200 text-xs rounded-xl">
+          <div className="p-2.5 bg-rose-500/10 border border-rose-500/20 text-rose-300 font-mono text-xs rounded-lg">
             {errorMsg}
           </div>
         )}
 
-        <form onSubmit={handleRenew} className="space-y-3.5">
+        <form onSubmit={handleRenew} className="space-y-3">
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Select Renewal Plan</label>
+            <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-1">Select Renewal Plan</label>
             <select
               value={selectedPlanId}
               onChange={(e) => setSelectedPlanId(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-brand-500"
+              className="w-full px-3 py-2 bg-[#0d0f12] border border-white/[0.08] rounded-lg text-xs text-zinc-100 focus:outline-none focus:border-white/30"
             >
               {plans.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -113,30 +113,30 @@ export default function RenewalModal({ member, isOpen, onClose, onRenewed }: Ren
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Promotional Discount (₹)</label>
+            <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-1">Promotional Discount (₹)</label>
             <input
               type="number"
               min="0"
               value={discountAmount}
               onChange={(e) => setDiscountAmount(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100"
+              className="w-full px-3 py-2 bg-[#0d0f12] border border-white/[0.08] rounded-lg text-sm text-zinc-100 focus:outline-none focus:border-white/30 font-mono"
             />
           </div>
 
-          <div className="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800 space-y-1.5 text-xs">
-            <div className="flex justify-between text-slate-400">
-              <span>Standard Price:</span>
-              <span>₹{basePrice.toLocaleString('en-IN')}</span>
+          <div className="bg-[#0d0f12] p-3 rounded-lg border border-white/[0.06] space-y-1.5 text-xs">
+            <div className="flex justify-between text-zinc-400">
+              <span>Standard Price</span>
+              <span className="font-mono">₹{basePrice.toLocaleString('en-IN')}</span>
             </div>
             {discount > 0 && (
-              <div className="flex justify-between text-red-400">
-                <span>Discount:</span>
-                <span>- ₹{discount.toLocaleString('en-IN')}</span>
+              <div className="flex justify-between text-rose-400">
+                <span>Discount</span>
+                <span className="font-mono">- ₹{discount.toLocaleString('en-IN')}</span>
               </div>
             )}
-            <div className="flex justify-between font-bold text-sm text-white pt-1 border-t border-slate-800">
-              <span>Payable Amount:</span>
-              <span className="text-brand-500">₹{finalPrice.toLocaleString('en-IN')}</span>
+            <div className="flex justify-between font-semibold text-sm text-zinc-100 pt-1.5 border-t border-white/[0.08]">
+              <span>Payable Amount</span>
+              <span className="font-mono text-emerald-400">₹{finalPrice.toLocaleString('en-IN')}</span>
             </div>
           </div>
 
@@ -144,16 +144,16 @@ export default function RenewalModal({ member, isOpen, onClose, onRenewed }: Ren
             <button
               type="button"
               onClick={onClose}
-              className="py-2.5 px-4 bg-slate-800 text-slate-300 text-xs font-medium rounded-xl flex-1"
+              className="h-9 px-4 bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 text-xs font-medium rounded-lg border border-white/[0.06] flex-1 transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="py-2.5 px-4 bg-brand-500 hover:bg-brand-600 text-slate-950 text-xs font-bold rounded-xl flex-1 shadow-lg shadow-brand-500/20 flex items-center justify-center space-x-1"
+              className="h-9 px-4 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-semibold rounded-lg flex-1 flex items-center justify-center space-x-1 transition"
             >
-              <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
+              <CheckCircle2 className="w-3.5 h-3.5 stroke-2" />
               <span>{submitting ? 'Renewing...' : 'Confirm Renewal'}</span>
             </button>
           </div>

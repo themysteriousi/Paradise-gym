@@ -9,31 +9,13 @@ interface MetricCardProps {
   onClick?: () => void;
 }
 
-const VARIANT_STYLES = {
-  brand: {
-    icon: 'text-brand-400 bg-brand-500/10 border-brand-500/20',
-    value: 'text-white',
-  },
-  sky: {
-    icon: 'text-sky-400 bg-sky-500/10 border-sky-500/20',
-    value: 'text-sky-400',
-  },
-  emerald: {
-    icon: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-    value: 'text-emerald-400',
-  },
-  amber: {
-    icon: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
-    value: 'text-amber-400',
-  },
-  rose: {
-    icon: 'text-rose-400 bg-rose-500/10 border-rose-500/20',
-    value: 'text-rose-400',
-  },
-  purple: {
-    icon: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
-    value: 'text-purple-400',
-  },
+const VALUE_COLORS: Record<string, string> = {
+  brand: 'text-[#ededed]',
+  sky: 'text-[#ededed]',
+  emerald: 'text-emerald-400',
+  amber: 'text-amber-400',
+  rose: 'text-rose-400',
+  purple: 'text-[#ededed]',
 };
 
 export default function MetricCard({
@@ -44,28 +26,28 @@ export default function MetricCard({
   variant = 'brand',
   onClick,
 }: MetricCardProps) {
-  const styles = VARIANT_STYLES[variant];
+  const valueColor = VALUE_COLORS[variant] || 'text-[#ededed]';
 
   return (
     <div
       onClick={onClick}
-      className={`bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col justify-between transition ${
-        onClick ? 'cursor-pointer hover:border-slate-700/80 active:scale-[0.99]' : ''
+      className={`bg-[#14161c] border border-white/[0.08] p-4 rounded-2xl flex flex-col justify-between transition-colors duration-150 ${
+        onClick ? 'cursor-pointer hover:border-white/[0.16]' : ''
       }`}
     >
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-slate-400">{title}</span>
-        <div className={`p-2 rounded-xl border ${styles.icon}`}>
-          <Icon className="w-4 h-4" />
+        <span className="text-xs font-medium text-[#a1a1a6]">{title}</span>
+        <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] text-[#a1a1a6] flex items-center justify-center">
+          <Icon className="w-4 h-4 stroke-[1.75]" />
         </div>
       </div>
 
-      <div className="mt-2">
-        <p className={`text-2xl font-black tracking-tight ${styles.value}`}>
+      <div className="mt-2.5">
+        <p className={`text-2xl font-semibold tracking-normal tabular-nums ${valueColor}`}>
           {value}
         </p>
         {subtitle && (
-          <p className="text-[10px] text-slate-500 mt-0.5 font-medium">{subtitle}</p>
+          <p className="text-[11px] text-[#71717a] mt-0.5">{subtitle}</p>
         )}
       </div>
     </div>

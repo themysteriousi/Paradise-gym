@@ -1,4 +1,4 @@
-import { Dumbbell, LogOut, Moon, Sun, Sparkles } from 'lucide-react';
+import { Dumbbell, LogOut, Moon, Sun } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useUiStore } from '@/stores/uiStore';
 
@@ -7,26 +7,26 @@ export default function Header() {
   const { theme, toggleTheme } = useUiStore();
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-slate-950/90 backdrop-blur-lg border-b border-slate-800/80 z-40 pt-[max(0.5rem,env(safe-area-inset-top))]">
+    <header className="fixed top-0 left-0 right-0 bg-[#0d0f12]/90 backdrop-blur-md border-b border-white/[0.08] z-40 pt-[max(0.5rem,env(safe-area-inset-top))]">
       <div className="max-w-lg mx-auto px-4 py-2.5 flex items-center justify-between">
         {/* Gym Identity */}
         <div className="flex items-center space-x-2.5">
-          <div className="bg-brand-500 p-2 rounded-xl text-slate-950 shadow-md shadow-brand-500/20">
-            <Dumbbell className="w-5 h-5 stroke-[2.5]" />
+          <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.08] text-emerald-400 flex items-center justify-center">
+            <Dumbbell className="w-4 h-4 stroke-[1.75]" />
           </div>
           <div>
             <div className="flex items-center space-x-1.5">
-              <h1 className="font-bold text-sm leading-tight text-white tracking-tight">
+              <h1 className="font-medium text-sm leading-tight text-[#ededed]">
                 {currentGym?.name || 'Paradise Gym'}
               </h1>
               {isDemoMode && (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                  <Sparkles className="w-2.5 h-2.5 mr-0.5 text-amber-400" /> DEMO
+                <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20">
+                  demo
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-slate-400 font-medium">
-              {currentPartner?.name ? `${currentPartner.name} (Partner)` : 'Partner Mode'}
+            <p className="text-[11px] text-[#71717a]">
+              {currentPartner?.name ? `${currentPartner.name} (Desk)` : 'Desk terminal'}
             </p>
           </div>
         </div>
@@ -36,16 +36,16 @@ export default function Header() {
           <button
             onClick={toggleTheme}
             aria-label="Toggle Theme"
-            className="p-2 text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 rounded-xl transition tap-bounce"
+            className="p-2 text-[#71717a] hover:text-[#ededed] hover:bg-white/[0.04] rounded-lg transition-colors duration-150"
           >
-            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {theme === 'dark' ? <Sun className="w-4 h-4 stroke-[1.75]" /> : <Moon className="w-4 h-4 stroke-[1.75]" />}
           </button>
           <button
             onClick={logout}
             aria-label="Log Out"
-            className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800/60 rounded-xl transition tap-bounce"
+            className="p-2 text-[#71717a] hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors duration-150"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-4 h-4 stroke-[1.75]" />
           </button>
         </div>
       </div>

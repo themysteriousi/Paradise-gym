@@ -97,87 +97,87 @@ export default function PaymentListPage({
   }, [payments, methodFilter, dateFilter, searchQuery, memberMap]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3.5">
       {/* Top Action Bar */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-black text-white tracking-tight">Payments & Collections</h1>
-          <p className="text-xs text-slate-400">Total {payments.length} collections recorded</p>
+          <h1 className="text-base font-semibold text-zinc-100 tracking-tight">Payments & Collections</h1>
+          <p className="text-[11px] font-mono text-zinc-500">{payments.length} collections recorded</p>
         </div>
         <button
           onClick={() => setIsRecordModalOpen(true)}
-          className="flex items-center space-x-1.5 px-3.5 py-2 bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold text-xs rounded-xl transition shadow-lg shadow-brand-500/20"
+          className="h-9 px-3 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs rounded-lg transition flex items-center space-x-1.5"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
           <span>Record Payment</span>
         </button>
       </div>
 
       {/* Summary KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        <div className="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl">
-          <div className="flex items-center space-x-1.5 text-slate-400 text-xs mb-1">
-            <TrendingUp className="w-3.5 h-3.5 text-brand-500" />
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="bg-[#14161c] border border-white/[0.08] p-3 rounded-xl">
+          <div className="flex items-center space-x-1.5 text-zinc-500 text-[10px] font-mono uppercase tracking-wider mb-1">
+            <TrendingUp className="w-3 h-3 text-emerald-400" />
             <span>Total Collected</span>
           </div>
-          <p className="text-lg font-black text-white">{formatRupees(summary.total_paise)}</p>
-          <p className="text-[10px] text-slate-500 mt-0.5">{summary.count} transactions</p>
+          <p className="text-base font-mono font-bold text-zinc-100">{formatRupees(summary.total_paise)}</p>
+          <p className="text-[10px] font-mono text-zinc-500 mt-0.5">{summary.count} txns</p>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl">
-          <div className="flex items-center space-x-1.5 text-slate-400 text-xs mb-1">
-            <Smartphone className="w-3.5 h-3.5 text-sky-400" />
+        <div className="bg-[#14161c] border border-white/[0.08] p-3 rounded-xl">
+          <div className="flex items-center space-x-1.5 text-zinc-500 text-[10px] font-mono uppercase tracking-wider mb-1">
+            <Smartphone className="w-3 h-3 text-zinc-400" />
             <span>UPI Total</span>
           </div>
-          <p className="text-lg font-black text-sky-400">{formatRupees(summary.upi_paise)}</p>
-          <p className="text-[10px] text-slate-500 mt-0.5">Instant online</p>
+          <p className="text-base font-mono font-semibold text-zinc-200">{formatRupees(summary.upi_paise)}</p>
+          <p className="text-[10px] font-mono text-zinc-500 mt-0.5">Online transfers</p>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl">
-          <div className="flex items-center space-x-1.5 text-slate-400 text-xs mb-1">
-            <Banknote className="w-3.5 h-3.5 text-emerald-400" />
+        <div className="bg-[#14161c] border border-white/[0.08] p-3 rounded-xl">
+          <div className="flex items-center space-x-1.5 text-zinc-500 text-[10px] font-mono uppercase tracking-wider mb-1">
+            <Banknote className="w-3 h-3 text-zinc-400" />
             <span>Cash Handover</span>
           </div>
-          <p className="text-lg font-black text-emerald-400">{formatRupees(summary.cash_paise)}</p>
-          <p className="text-[10px] text-slate-500 mt-0.5">Physical desk</p>
+          <p className="text-base font-mono font-semibold text-zinc-200">{formatRupees(summary.cash_paise)}</p>
+          <p className="text-[10px] font-mono text-zinc-500 mt-0.5">Physical desk</p>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl">
-          <div className="flex items-center space-x-1.5 text-slate-400 text-xs mb-1">
-            <CreditCard className="w-3.5 h-3.5 text-purple-400" />
+        <div className="bg-[#14161c] border border-white/[0.08] p-3 rounded-xl">
+          <div className="flex items-center space-x-1.5 text-zinc-500 text-[10px] font-mono uppercase tracking-wider mb-1">
+            <CreditCard className="w-3 h-3 text-zinc-400" />
             <span>Card / Other</span>
           </div>
-          <p className="text-lg font-black text-purple-400">
+          <p className="text-base font-mono font-semibold text-zinc-200">
             {formatRupees(summary.card_paise + summary.other_paise)}
           </p>
-          <p className="text-[10px] text-slate-500 mt-0.5">POS & Netbanking</p>
+          <p className="text-[10px] font-mono text-zinc-500 mt-0.5">POS & other</p>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
       <div className="space-y-2">
         <div className="relative">
-          <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3 top-2.5 text-zinc-500" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search member name, phone, or reference..."
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            placeholder="Search member, phone, or reference..."
+            className="w-full bg-[#14161c] border border-white/[0.08] rounded-lg pl-9 pr-3.5 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-white/30"
           />
         </div>
 
-        <div className="flex items-center justify-between overflow-x-auto pb-1 gap-2">
-          {/* Date Filter Pills */}
+        <div className="flex items-center justify-between overflow-x-auto pb-0.5 gap-2 text-xs">
+          {/* Date Filter Tabs */}
           <div className="flex items-center space-x-1 shrink-0">
             {(['all', 'today', 'week', 'month'] as const).map((df) => (
               <button
                 key={df}
                 onClick={() => setDateFilter(df)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg capitalize transition ${
+                className={`px-2.5 py-1 text-xs font-medium rounded-md capitalize transition ${
                   dateFilter === df
-                    ? 'bg-slate-800 text-brand-400 border border-brand-500/30'
-                    : 'text-slate-400 hover:text-white bg-slate-900/50'
+                    ? 'bg-white/[0.08] text-white border border-white/[0.12]'
+                    : 'text-zinc-400 hover:text-zinc-200 border border-transparent'
                 }`}
               >
                 {df === 'all' ? 'All Time' : df}
@@ -185,17 +185,17 @@ export default function PaymentListPage({
             ))}
           </div>
 
-          {/* Method Filter Pills */}
+          {/* Method Filter Tabs */}
           <div className="flex items-center space-x-1 shrink-0">
-            <Filter className="w-3.5 h-3.5 text-slate-500" />
+            <Filter className="w-3 h-3 text-zinc-500 mr-0.5" />
             {(['all', 'upi', 'cash', 'card'] as const).map((mf) => (
               <button
                 key={mf}
                 onClick={() => setMethodFilter(mf)}
-                className={`px-2.5 py-1 text-xs font-semibold rounded-lg uppercase transition ${
+                className={`px-2 py-0.5 text-[11px] font-mono uppercase rounded-md transition ${
                   methodFilter === mf
-                    ? 'bg-brand-500 text-slate-950 font-bold'
-                    : 'text-slate-400 hover:text-white bg-slate-900/50'
+                    ? 'bg-white/[0.08] text-white border border-white/[0.12]'
+                    : 'text-zinc-400 hover:text-zinc-200 border border-transparent'
                 }`}
               >
                 {mf}
@@ -206,12 +206,12 @@ export default function PaymentListPage({
       </div>
 
       {/* Payment List */}
-      <div className="space-y-2 touch-pan-y">
+      <div className="space-y-1.5 touch-pan-y">
         {filteredPayments.length === 0 ? (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center space-y-2">
-            <Receipt className="w-8 h-8 text-slate-600 mx-auto" />
-            <p className="text-sm font-semibold text-slate-300">No payment records found</p>
-            <p className="text-xs text-slate-500">
+          <div className="bg-[#14161c] border border-white/[0.07] rounded-xl p-8 text-center space-y-1.5">
+            <Receipt className="w-6 h-6 text-zinc-600 mx-auto" />
+            <p className="text-xs font-medium text-zinc-300">No payment records found</p>
+            <p className="text-[11px] text-zinc-500">
               Try adjusting your date/method filters or record a new collection.
             </p>
           </div>
@@ -228,32 +228,30 @@ export default function PaymentListPage({
             return (
               <div
                 key={p.id}
-                className="bg-slate-900 border border-slate-800 hover:border-slate-700/80 p-3.5 rounded-2xl transition space-y-2 touch-pan-y"
+                className="bg-[#14161c] border border-white/[0.07] hover:border-white/[0.14] p-3 rounded-xl transition space-y-2 touch-pan-y"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center font-bold text-slate-300 text-xs border border-slate-700/50 shrink-0">
+                    <div className="w-8 h-8 rounded-md bg-white/[0.04] flex items-center justify-center font-mono font-bold text-zinc-300 text-xs border border-white/[0.08] shrink-0">
                       {member?.full_name?.charAt(0) || 'M'}
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-white leading-tight">
+                      <p className="text-xs font-medium text-zinc-100 leading-tight">
                         {member?.full_name || 'Member'}
                       </p>
-                      <p className="text-[11px] text-slate-400 mt-0.5">
+                      <p className="text-[11px] font-mono text-zinc-500 mt-0.5">
                         {member?.phone} • {formattedDate}
                       </p>
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <p className="text-base font-black text-white">{formatRupees(p.amount_paise)}</p>
+                    <p className="text-sm font-mono font-bold text-zinc-100">{formatRupees(p.amount_paise)}</p>
                     <span
-                      className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-bold uppercase mt-0.5 ${
-                        p.method === 'upi'
-                          ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
-                          : p.method === 'cash'
+                      className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-mono uppercase mt-0.5 ${
+                        p.method === 'cash'
                           ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                          : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                          : 'bg-white/[0.04] text-zinc-300 border border-white/[0.08]'
                       }`}
                     >
                       {p.method}
@@ -262,36 +260,36 @@ export default function PaymentListPage({
                 </div>
 
                 {/* Sub details: reference, notes & action bar */}
-                <div className="pt-2 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+                <div className="pt-1.5 border-t border-white/[0.06] flex items-center justify-between text-xs text-zinc-400">
                   <div className="truncate max-w-[200px]">
                     {p.reference && (
-                      <span className="font-mono text-[11px] text-slate-500 mr-2">Ref: {p.reference}</span>
+                      <span className="font-mono text-[10px] text-zinc-500 mr-2">Ref: {p.reference}</span>
                     )}
-                    {p.note && <span className="text-[11px] italic">{p.note}</span>}
+                    {p.note && <span className="text-[11px] text-zinc-400 italic">{p.note}</span>}
                   </div>
 
-                  <div className="flex items-center space-x-2 shrink-0">
+                  <div className="flex items-center space-x-1 shrink-0">
                     <button
                       onClick={() => setSelectedReceipt(p)}
-                      className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 flex items-center space-x-1"
+                      className="px-2 py-0.5 text-zinc-400 hover:text-white rounded hover:bg-white/[0.06] flex items-center space-x-1 text-[11px]"
                       title="View Digital Receipt"
                     >
-                      <Receipt className="w-3.5 h-3.5" />
-                      <span className="text-[11px]">Receipt</span>
+                      <Receipt className="w-3 h-3" />
+                      <span>Receipt</span>
                     </button>
                     <button
                       onClick={() => (onOpenCorrection ? onOpenCorrection(p) : setCorrectionPayment(p))}
-                      className="p-1 text-slate-400 hover:text-amber-400 rounded-lg hover:bg-slate-800"
+                      className="p-1 text-zinc-500 hover:text-amber-400 rounded hover:bg-white/[0.06]"
                       title="Correct Entry"
                     >
-                      <Edit3 className="w-3.5 h-3.5" />
+                      <Edit3 className="w-3 h-3" />
                     </button>
                     <button
                       onClick={() => (onOpenRefund ? onOpenRefund(p) : setRefundPayment(p))}
-                      className="p-1 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800"
+                      className="p-1 text-zinc-500 hover:text-rose-400 rounded hover:bg-white/[0.06]"
                       title="Issue Refund"
                     >
-                      <RotateCcw className="w-3.5 h-3.5" />
+                      <RotateCcw className="w-3 h-3" />
                     </button>
                   </div>
                 </div>
