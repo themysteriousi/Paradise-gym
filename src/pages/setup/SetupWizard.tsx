@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Dumbbell, ArrowRight, CheckCircle2, ShieldCheck, QrCode } from 'lucide-react';
-import { useAuthStore } from '@/stores/authStore';
 
 export default function SetupWizard() {
   const [step, setStep] = useState(1);
@@ -9,8 +8,6 @@ export default function SetupWizard() {
   const [partner1Email, setPartner1Email] = useState('');
   const [partner2Email, setPartner2Email] = useState('');
   const [monthlyFee, setMonthlyFee] = useState('1500');
-
-  const enableDemoMode = useAuthStore((s) => s.enableDemoMode);
 
   return (
     <div className="max-w-md mx-auto space-y-6 py-6">
@@ -151,7 +148,7 @@ export default function SetupWizard() {
           </p>
 
           <button
-            onClick={enableDemoMode}
+            onClick={() => window.location.reload()}
             className="w-full py-3.5 px-4 bg-brand-500 hover:bg-brand-600 text-slate-950 font-black text-sm rounded-xl shadow-lg shadow-brand-500/20 active:scale-[0.98] transition"
           >
             Open Gym Operations Dashboard

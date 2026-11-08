@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useUiStore } from '@/stores/uiStore';
 
 export default function Header() {
-  const { currentGym, currentPartner, isDemoMode, logout } = useAuthStore();
+  const { currentGym, currentPartner, logout } = useAuthStore();
   const { theme, toggleTheme } = useUiStore();
 
   return (
@@ -19,11 +19,6 @@ export default function Header() {
               <h1 className="font-medium text-sm leading-tight text-[#ededed]">
                 {currentGym?.name || 'Paradise Gym'}
               </h1>
-              {isDemoMode && (
-                <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20">
-                  demo
-                </span>
-              )}
             </div>
             <p className="text-[11px] text-[#71717a]">
               {currentPartner?.name ? `${currentPartner.name} (Desk)` : 'Desk terminal'}

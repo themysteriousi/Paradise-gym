@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dumbbell, ArrowRight } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
-import { useDemoStore } from '@/stores/demoStore';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 export default function LoginPage() {
@@ -9,13 +8,58 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
-  const enableDemoMode = useAuthStore((s) => s.enableDemoMode);
   const setPartner = useAuthStore((s) => s.setPartner);
 
-  const handleDemoAccess = () => {
-    useDemoStore.getState().resetToDefault();
-    enableDemoMode();
+  useEffect(() => {
+    // Check URL parameters for OAuth errors (e.g. user cancelled or Supabase OAuth misconfiguration)
+    const urlParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const errorDesc =
+      urlParams.get('error_description') ||
+      hashParams.get('error_description') ||
+      urlParams.get('error') ||
+      hashParams.get('error');
+
+    if (errorDesc) {
+      setErrorMsg(decodeURIComponent(errorDesc.replace(/\+/g, ' ')));
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
+  const handleGoogleLogin = async () => {
+    setErrorMsg('');
+
+    if (!isSupabaseConfigured) {
+      setErrorMsg(
+        'Supabase is not configured yet with live project keys. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env file.'
+      );
+      return;
+    }
+
+    try {
+      setGoogleLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+
+      if (error) throw error;
+    } catch (err: unknown) {
+      console.error('Google sign-in error:', err);
+      let msg = 'Google sign-in failed.';
+      if (err instanceof Error) {
+        msg = err.message;
+      } else if (err && typeof err === 'object') {
+        const o = err as Record<string, unknown>;
+        msg = (o.message as string) || (o.details as string) || (o.error_description as string) || msg;
+      }
+      setErrorMsg(msg);
+      setGoogleLoading(false);
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -23,7 +67,9 @@ export default function LoginPage() {
     setErrorMsg('');
 
     if (!isSupabaseConfigured) {
-      setErrorMsg('Supabase credentials not configured in environment. Please use Demo Mode below.');
+      setErrorMsg(
+        'Supabase credentials not configured in environment. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env file.'
+      );
       return;
     }
 
@@ -54,9 +100,6 @@ export default function LoginPage() {
         .select('*')
         .eq('id', partner.gym_id)
         .single();
-
-      // Clear demo mock data when logging into real live database
-      useDemoStore.getState().clearForLiveMode();
 
       setPartner(partner, gymRecord || {
         id: partner.gym_id,
@@ -115,6 +158,44 @@ export default function LoginPage() {
             </div>
           )}
 
+          {/* Continue with Google */}
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={loading || googleLoading}
+            className="w-full h-10 px-4 bg-white/[0.03] hover:bg-white/[0.07] active:bg-white/[0.1] text-[#ededed] border border-white/[0.08] font-medium text-xs rounded-lg transition-colors duration-150 flex items-center justify-center space-x-2.5 disabled:opacity-50"
+          >
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+              <path
+                fill="#4285F4"
+                d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+              />
+            </svg>
+            <span>{googleLoading ? 'Connecting to Google...' : 'Continue with Google'}</span>
+          </button>
+
+          {/* Divider */}
+          <div className="relative py-0.5">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/[0.06]"></div>
+            </div>
+            <div className="relative flex justify-center text-[10px] uppercase font-mono tracking-wider">
+              <span className="bg-[#14161c] px-2 text-[#71717a]">or partner email</span>
+            </div>
+          </div>
+
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-1.5">
               <label className="block text-xs font-medium text-[#a1a1a6]">Partner email</label>
@@ -151,25 +232,6 @@ export default function LoginPage() {
               <ArrowRight className="w-3.5 h-3.5 stroke-[2]" />
             </button>
           </form>
-
-          {/* Quiet Demo Divider */}
-          <div className="relative py-1">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/[0.06]"></div>
-            </div>
-            <div className="relative flex justify-center text-[11px]">
-              <span className="bg-[#14161c] px-2 text-[#71717a]">or</span>
-            </div>
-          </div>
-
-          {/* Instant Demo Terminal Access */}
-          <button
-            type="button"
-            onClick={handleDemoAccess}
-            className="w-full h-9 px-4 bg-white/[0.03] hover:bg-white/[0.06] text-[#ededed] border border-white/[0.08] font-medium text-xs rounded-lg transition-colors duration-150 flex items-center justify-center space-x-2"
-          >
-            <span>Launch demo mode</span>
-          </button>
         </div>
 
         <p className="text-center text-[11px] text-[#71717a] font-mono">
@@ -179,4 +241,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
