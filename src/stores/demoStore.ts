@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type {
   DbMember,
   DbMembership,
@@ -46,8 +47,10 @@ interface DemoState {
 
 const initialData = generateDemoDataset();
 
-export const useDemoStore = create<DemoState>((set) => ({
-  members: initialData.members,
+export const useDemoStore = create<DemoState>()(
+  persist(
+    (set) => ({
+      members: initialData.members,
   memberships: initialData.memberships,
   plans: initialData.plans,
   payments: initialData.payments,
@@ -157,4 +160,9 @@ export const useDemoStore = create<DemoState>((set) => ({
       extensions: [],
     });
   },
-}));
+}),
+{
+  name: 'paradise_demo_store',
+}
+)
+);

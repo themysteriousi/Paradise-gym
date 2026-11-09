@@ -30,7 +30,11 @@ export const membershipService = {
   },
 
   async getPlans(gymId: string): Promise<DbMembershipPlan[]> {
-    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
+    const isDemo =
+      useAuthStore.getState().isDemoMode ||
+      !isSupabaseConfigured ||
+      gymId === 'demo-gym-001' ||
+      gymId.startsWith('demo-');
 
     if (isDemo) {
       const demoPlans = useDemoStore.getState().plans;
@@ -133,7 +137,10 @@ export const membershipService = {
   },
 
   async getMemberActiveMembership(memberId: string): Promise<DbMembership | null> {
-    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
+    const isDemo =
+      useAuthStore.getState().isDemoMode ||
+      !isSupabaseConfigured ||
+      memberId.startsWith('demo-');
 
     if (isDemo) {
       return (

@@ -248,3 +248,4 @@ export default function SelfCheckInPage({ gymId = 'demo-gym-001' }: SelfCheckInP
     </div>
   );
 }
+

@@ -76,7 +76,11 @@ export function checkRecentCheckIn(
 export async function processMemberCheckIn(
   input: ProcessCheckInInput
 ): Promise<CheckInResult> {
-  const isDemoMode = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
+  const isDemoMode =
+    useAuthStore.getState().isDemoMode ||
+    !isSupabaseConfigured ||
+    input.gym_id === 'demo-gym-001' ||
+    input.gym_id.startsWith('demo-');
   let member: DbMember | undefined;
 
   // 1. Resolve Member
@@ -113,7 +117,19 @@ export async function processMemberCheckIn(
     if (isDemoMode) {
       member = useDemoStore
         .getState()
-        .members.find((m) => m.phone === cleanPhone && m.status !== 'archived');
+        .members.find((m) => {
+          const mPhone = m.phone.trim().replace(/\D/g, '');
+          return (
+            (mPhone === cleanPhone || mPhone.endsWith(cleanPhone) || cleanPhone.endsWith(mPhone)) &&
+            m.status !== 'archived'
+          );
+        });
+      if (!member) {
+        return {
+          success: false,
+          error: `Member not found with mobile number ${cleanPhone}. Please register at the desk.`,
+        };
+      }
     } else {
       const { data, error } = await supabase
         .from('members')
