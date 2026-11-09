@@ -9,6 +9,7 @@ export interface ProcessCheckInInput {
   gym_id: string;
   tokenString?: string;
   member_id?: string;
+  phone?: string;
   method: AttendanceMethod;
   checked_in_by?: string | null;
   device_id?: string | null;
@@ -22,6 +23,8 @@ export interface CheckInResult {
   isDuplicateWarning?: boolean;
   statusWarning?: string;
   hasOutstandingDues?: boolean;
+  planName?: string;
+  daysRemaining?: number;
   error?: string;
 }
 
@@ -99,6 +102,34 @@ export async function processMemberCheckIn(
       }
       member = data;
     }
+  } else if (input.phone) {
+    let cleanPhone = input.phone.trim().replace(/\D/g, '');
+    if (cleanPhone.length === 12 && cleanPhone.startsWith('91')) {
+      cleanPhone = cleanPhone.slice(2);
+    } else if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) {
+      cleanPhone = cleanPhone.slice(1);
+    }
+
+    if (isDemoMode) {
+      member = useDemoStore
+        .getState()
+        .members.find((m) => m.phone === cleanPhone && m.status !== 'archived');
+    } else {
+      const { data, error } = await supabase
+        .from('members')
+        .select('*')
+        .eq('gym_id', input.gym_id)
+        .eq('phone', cleanPhone)
+        .neq('status', 'archived')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error || !data) {
+        return { success: false, error: 'Member not found with this mobile number. Please register at the desk.' };
+      }
+      member = data;
+    }
   }
 
   if (!member) {
@@ -112,6 +143,19 @@ export async function processMemberCheckIn(
   // 3. Status and Dues warnings based on real membership data
   const activeMs = await membershipService.getMemberActiveMembership(member.id);
   const membershipId = activeMs?.id || null;
+
+  let planName = 'No Active Plan';
+  let daysRemaining: number | undefined;
+
+  if (activeMs) {
+    const plans = await membershipService.getPlans(input.gym_id);
+    const plan = plans.find((p) => p.id === activeMs.plan_id);
+    if (plan) planName = plan.name;
+
+    const expDate = new Date(activeMs.end_date);
+    const diff = expDate.getTime() - Date.now();
+    daysRemaining = Math.max(0, Math.ceil(diff / 86400000));
+  }
 
   let statusWarning: string | undefined;
   if (!activeMs) {
@@ -154,6 +198,8 @@ export async function processMemberCheckIn(
       isDuplicateWarning,
       statusWarning,
       hasOutstandingDues,
+      planName,
+      daysRemaining,
     };
   }
 
@@ -182,6 +228,8 @@ export async function processMemberCheckIn(
       isDuplicateWarning,
       statusWarning,
       hasOutstandingDues,
+      planName,
+      daysRemaining,
     };
   } catch (err: unknown) {
     return {

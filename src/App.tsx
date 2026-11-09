@@ -7,6 +7,7 @@ import PaymentListPage from '@/pages/payments/PaymentListPage';
 import AttendancePage from '@/pages/attendance/AttendancePage';
 import MoreHubPage from '@/pages/more/MoreHubPage';
 import RegisterPage from '@/pages/public/RegisterPage';
+import SelfCheckInPage from '@/pages/public/SelfCheckInPage';
 
 function MainContent() {
   const activeTab = useUiStore((s) => s.activeTab);
@@ -38,6 +39,17 @@ export default function App() {
   if (isPublicRegister) {
     const gymId = searchParams.get('gym') || 'demo-gym-001';
     return <RegisterPage gymId={gymId} />;
+  }
+
+  // Check if member scanned public wall QR code for self-checkin
+  const isSelfCheckIn =
+    searchParams.get('checkin') === 'true' ||
+    window.location.pathname.startsWith('/checkin') ||
+    window.location.hash.includes('checkin');
+
+  if (isSelfCheckIn) {
+    const gymId = searchParams.get('gym') || 'demo-gym-001';
+    return <SelfCheckInPage gymId={gymId} />;
   }
 
   return (
