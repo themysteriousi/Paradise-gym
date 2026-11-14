@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useDemoStore } from '@/stores/demoStore';
+import { useAuthStore } from '@/stores/authStore';
 import { formatRupees, getPaymentSummary } from '@/services/paymentService';
 import type { DbPayment } from '@/types/database';
 import RecordPaymentModal from '@/components/payments/RecordPaymentModal';
@@ -30,6 +31,7 @@ export default function PaymentListPage({
 }: PaymentListPageProps) {
   const payments = useDemoStore((s) => s.payments);
   const members = useDemoStore((s) => s.members);
+  const currentGym = useAuthStore((s) => s.currentGym);
 
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -332,7 +334,9 @@ export default function PaymentListPage({
             <div>
               <p className="text-xs uppercase font-bold tracking-wider text-slate-500">Official Receipt</p>
               <h3 className="text-xl font-black text-white mt-0.5">Paradise Gym</h3>
-              <p className="text-xs text-slate-400">Civil Lines, Paradise City</p>
+              <p className="text-xs text-slate-400">
+                {currentGym?.address || 'Lakshay Sarovar Kidana, Front of Lake'}
+              </p>
             </div>
 
             <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-left space-y-2 text-xs">

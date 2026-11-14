@@ -1,7 +1,10 @@
-import { useState } from 'react';
-import { X, UserPlus, Phone, User, Calendar, FileText } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, UserPlus, Phone, User, Calendar, FileText, Dumbbell, Flame } from 'lucide-react';
 import { memberService, CreateMemberInput } from '@/services/memberService';
+import { membershipService } from '@/services/membershipService';
+import { generateMemberQrToken } from '@/services/qrService';
 import { useAuthStore } from '@/stores/authStore';
+import type { DbMembershipPlan } from '@/types/database';
 
 interface MemberFormModalProps {
   isOpen: boolean;
@@ -17,9 +20,23 @@ export default function MemberFormModal({ isOpen, onClose, onMemberCreated }: Me
   const [email, setEmail] = useState('');
   const [gender, setGender] = useState('male');
   const [dateOfBirth, setDateOfBirth] = useState('');
+  const [plans, setPlans] = useState<DbMembershipPlan[]>([]);
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  useEffect(() => {
+    const gymId = currentPartner?.gym_id || currentGym?.id;
+    if (gymId && isOpen) {
+      membershipService.getPlans(gymId).then((loaded) => {
+        setPlans(loaded);
+        if (loaded.length > 0) {
+          setSelectedPlanId((prev) => (prev ? prev : loaded[0].id));
+        }
+      });
+    }
+  }, [currentPartner?.gym_id, currentGym?.id, isOpen]);
 
   if (!isOpen) return null;
 
@@ -66,7 +83,38 @@ export default function MemberFormModal({ isOpen, onClose, onMemberCreated }: Me
         notes: notes.trim() || null,
       };
 
-      await memberService.createMember(input);
+      const newMember = await memberService.createMember(input);
+
+      // Attach selected plan if chosen
+      if (selectedPlanId) {
+        const plan = plans.find((p) => p.id === selectedPlanId);
+        if (plan) {
+          try {
+            await membershipService.createMembership({
+              gymId,
+              memberId: newMember.id,
+              planId: plan.id,
+              pricePaise: plan.price_paise,
+              paidPaise: 0,
+              startDate: new Date(),
+              durationDays: plan.duration_days || 30,
+              partnerId: currentPartner?.id || 'desk-partner',
+            });
+          } catch (planErr) {
+            console.warn('Initial plan assignment error:', planErr);
+          }
+        }
+      }
+
+      // Generate initial QR token for attendance
+      try {
+        await generateMemberQrToken({
+          gym_id: gymId,
+          member_id: newMember.id,
+          expires_in_days: 365,
+        });
+      } catch (_) {}
+
       onMemberCreated();
       onClose();
     } catch (err: unknown) {
@@ -176,6 +224,51 @@ export default function MemberFormModal({ isOpen, onClose, onMemberCreated }: Me
                   className="w-full pl-9 pr-2 py-2 bg-[#0d0f12] border border-white/[0.08] rounded-lg text-xs text-zinc-100 focus:outline-none focus:border-white/30 font-mono"
                 />
               </div>
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400">
+                Initial Membership Plan
+              </label>
+              <span className="text-[10px] font-mono text-amber-400 flex items-center gap-1 font-semibold">
+                <Flame className="w-3 h-3 text-amber-400" />
+                Diwali Offer Active
+              </span>
+            </div>
+            <div className="relative">
+              <Dumbbell className="w-4 h-4 text-zinc-500 absolute left-3 top-2.5" />
+              <select
+                value={selectedPlanId}
+                onChange={(e) => setSelectedPlanId(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 bg-[#0d0f12] border border-white/[0.08] rounded-lg text-xs text-zinc-100 focus:outline-none focus:border-amber-400/50"
+              >
+                {plans.length > 0 ? (
+                  <>
+                    <optgroup label="💥 Special Diwali & Opening Offer">
+                      {plans
+                        .filter((p) => p.id.includes('offer'))
+                        .map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} — ₹{(p.price_paise / 100).toLocaleString('en-IN')}
+                          </option>
+                        ))}
+                    </optgroup>
+                    <optgroup label="Standard Regular Rates">
+                      {plans
+                        .filter((p) => !p.id.includes('offer'))
+                        .map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} — ₹{(p.price_paise / 100).toLocaleString('en-IN')}
+                          </option>
+                        ))}
+                    </optgroup>
+                  </>
+                ) : (
+                  <option value="">No active plans found</option>
+                )}
+              </select>
             </div>
           </div>
 

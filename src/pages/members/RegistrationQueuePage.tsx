@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Check, X, Phone, UserCheck, AlertCircle, ArrowLeft, QrCode, Copy, ExternalLink, Download } from 'lucide-react';
 import { registrationService, RegistrationSubmission } from '@/services/registrationService';
 import { cardGeneratorService } from '@/services/cardGeneratorService';
+import { membershipService } from '@/services/membershipService';
+import type { DbMembershipPlan } from '@/types/database';
 import { useAuthStore } from '@/stores/authStore';
 
 interface RegistrationQueuePageProps {
@@ -13,6 +15,7 @@ export default function RegistrationQueuePage({ onBack, onMemberApproved }: Regi
   const currentGym = useAuthStore((s) => s.currentGym);
   const currentPartner = useAuthStore((s) => s.currentPartner);
   const [submissions, setSubmissions] = useState<RegistrationSubmission[]>([]);
+  const [plans, setPlans] = useState<DbMembershipPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [showQrModal, setShowQrModal] = useState(false);
@@ -34,8 +37,12 @@ export default function RegistrationQueuePage({ onBack, onMemberApproved }: Regi
     if (!currentGym) return;
     try {
       setLoading(true);
-      const data = await registrationService.getPendingSubmissions(currentGym.id);
-      setSubmissions(data);
+      const [queueData, plansData] = await Promise.all([
+        registrationService.getPendingSubmissions(currentGym.id),
+        membershipService.getPlans(currentGym.id),
+      ]);
+      setSubmissions(queueData);
+      setPlans(plansData);
     } finally {
       setLoading(false);
     }
@@ -155,9 +162,23 @@ export default function RegistrationQueuePage({ onBack, onMemberApproved }: Regi
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-xs">
-                  <span className="text-zinc-400 capitalize font-mono text-[11px]">
-                    Plan: {sub.selected_plan_id.replace('plan-', '')}
-                  </span>
+                  <div>
+                    {(() => {
+                      const matchedPlan = plans.find((p) => p.id === sub.selected_plan_id);
+                      return matchedPlan ? (
+                        <div className="space-y-0.5">
+                          <p className="text-zinc-200 font-medium text-xs">{matchedPlan.name}</p>
+                          <p className="text-emerald-400 font-mono text-[11px] font-semibold">
+                            ₹{(matchedPlan.price_paise / 100).toLocaleString('en-IN')} • {matchedPlan.duration_days} days
+                          </p>
+                        </div>
+                      ) : (
+                        <span className="text-zinc-400 capitalize font-mono text-[11px]">
+                          Plan: {sub.selected_plan_id.replace('plan-', '')}
+                        </span>
+                      );
+                    })()}
+                  </div>
                   <div className="flex space-x-2">
                     <button
                       onClick={() => handleReject(sub)}

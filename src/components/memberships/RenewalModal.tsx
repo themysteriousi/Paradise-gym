@@ -130,13 +130,26 @@ export default function RenewalModal({ member, isOpen, onClose, onRenewed }: Ren
             <select
               value={selectedPlanId}
               onChange={(e) => setSelectedPlanId(e.target.value)}
-              className="w-full px-3 py-2 bg-[#0d0f12] border border-white/[0.08] rounded-lg text-xs text-zinc-100 focus:outline-none focus:border-white/30"
+              className="w-full px-3 py-2 bg-[#0d0f12] border border-white/[0.08] rounded-lg text-xs text-zinc-100 focus:outline-none focus:border-amber-400/50"
             >
-              {plans.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} — ₹{(p.price_paise / 100).toLocaleString('en-IN')} ({p.duration_days} days)
-                </option>
-              ))}
+              <optgroup label="💥 Special Diwali & Opening Offer">
+                {plans
+                  .filter((p) => p.id.includes('offer'))
+                  .map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} — ₹{(p.price_paise / 100).toLocaleString('en-IN')} ({p.duration_days} days)
+                    </option>
+                  ))}
+              </optgroup>
+              <optgroup label="Standard Regular Rates">
+                {plans
+                  .filter((p) => !p.id.includes('offer'))
+                  .map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} — ₹{(p.price_paise / 100).toLocaleString('en-IN')} ({p.duration_days} days)
+                    </option>
+                  ))}
+              </optgroup>
             </select>
           </div>
 

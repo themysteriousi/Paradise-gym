@@ -20,8 +20,8 @@ interface AuthState {
 export const DEFAULT_GYM: DbGym = {
   id: '00000000-0000-0000-0000-000000000001',
   name: 'Paradise Gym',
-  address: '123 Fitness Street, Near Civil Lines',
-  phone: '9876543210',
+  address: 'Lakshay Sarovar Kidana, Front of Lake',
+  phone: '9925852531',
   email: 'contact@paradisegym.com',
   gst_number: null,
   logo_url: null,

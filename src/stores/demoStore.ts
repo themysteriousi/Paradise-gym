@@ -163,6 +163,17 @@ export const useDemoStore = create<DemoState>()(
 }),
 {
   name: 'paradise_demo_store',
+  version: 2,
+  migrate: (persistedState: unknown, version: number) => {
+    const state = (persistedState || {}) as Record<string, unknown>;
+    if (version < 2) {
+      return {
+        ...state,
+        plans: generateDemoDataset().plans,
+      };
+    }
+    return state;
+  },
 }
 )
 );

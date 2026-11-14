@@ -1,6 +1,8 @@
-import { useState } from 'react';
-import { Dumbbell, ArrowRight, CheckCircle2, ShieldCheck, UserCheck } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Dumbbell, ArrowRight, CheckCircle2, ShieldCheck, UserCheck, Flame } from 'lucide-react';
 import { registrationService } from '@/services/registrationService';
+import { membershipService } from '@/services/membershipService';
+import type { DbMembershipPlan } from '@/types/database';
 
 interface RegisterPageProps {
   gymId?: string;
@@ -11,12 +13,22 @@ export default function RegisterPage({ gymId = 'demo-gym-001', onSuccess }: Regi
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [selectedPlanId, setSelectedPlanId] = useState('plan-monthly');
+  const [plans, setPlans] = useState<DbMembershipPlan[]>([]);
+  const [selectedPlanId, setSelectedPlanId] = useState('plan-offer-gym-1m');
   const [gender, setGender] = useState('male');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  useEffect(() => {
+    membershipService.getPlans(gymId).then((loadedPlans) => {
+      setPlans(loadedPlans);
+      if (loadedPlans.length > 0) {
+        setSelectedPlanId(loadedPlans[0].id);
+      }
+    });
+  }, [gymId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,15 +159,44 @@ export default function RegisterPage({ gymId = 'demo-gym-001', onSuccess }: Regi
             </div>
 
             <div>
-              <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-1">Select Membership Plan</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-[11px] font-mono uppercase tracking-wider text-zinc-400">
+                  Select Membership Plan
+                </label>
+                <span className="text-[10px] font-mono text-amber-400 flex items-center gap-1 font-semibold">
+                  <Flame className="w-3 h-3 text-amber-400" />
+                  Diwali Offer Active
+                </span>
+              </div>
               <select
                 value={selectedPlanId}
                 onChange={(e) => setSelectedPlanId(e.target.value)}
-                className="w-full px-3 py-2 bg-[#0d0f12] border border-white/[0.08] rounded-lg text-xs text-zinc-100 focus:outline-none focus:border-white/30"
+                className="w-full px-3 py-2 bg-[#0d0f12] border border-white/[0.08] rounded-lg text-xs text-zinc-100 focus:outline-none focus:border-amber-400/50"
               >
-                <option value="plan-monthly">Monthly Standard — ₹1,500/month</option>
-                <option value="plan-quarterly">Quarterly Value — ₹3,800/3 months</option>
-                <option value="plan-yearly">Annual Champion — ₹12,000/year</option>
+                {plans.length > 0 ? (
+                  <>
+                    <optgroup label="💥 Special Diwali & Opening Offer (Best Value)">
+                      {plans
+                        .filter((p) => p.id.includes('offer'))
+                        .map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} — ₹{(p.price_paise / 100).toLocaleString('en-IN')}
+                          </option>
+                        ))}
+                    </optgroup>
+                    <optgroup label="Standard Regular Rates">
+                      {plans
+                        .filter((p) => !p.id.includes('offer'))
+                        .map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} — ₹{(p.price_paise / 100).toLocaleString('en-IN')}
+                          </option>
+                        ))}
+                    </optgroup>
+                  </>
+                ) : (
+                  <option value="plan-offer-gym-1m">1 Month Gym (Diwali Offer) — ₹1,200</option>
+                )}
               </select>
             </div>
 

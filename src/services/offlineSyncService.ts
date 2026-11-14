@@ -100,7 +100,7 @@ export async function processOfflineSync(): Promise<SyncResult> {
               id: item.id.startsWith('att-') ? item.id : `att-${Date.now()}-${syncedCount}`,
               gym_id: payload.gym_id || 'demo-gym-001',
               member_id: payload.member_id,
-              membership_id: 'plan-monthly',
+              membership_id: payload.membership_id || null,
               method: payload.method || 'qr_scan',
               checked_in_at: payload.checked_in_at || new Date().toISOString(),
               checked_in_by: payload.checked_in_by || null,
@@ -119,7 +119,7 @@ export async function processOfflineSync(): Promise<SyncResult> {
           const { error } = await supabase.from('attendance').upsert({
             gym_id: payload.gym_id,
             member_id: payload.member_id,
-            membership_id: 'plan-monthly',
+            membership_id: payload.membership_id || null,
             method: payload.method || 'qr_scan',
             checked_in_at: payload.checked_in_at,
             device_id: payload.device_id || 'offline-device',
