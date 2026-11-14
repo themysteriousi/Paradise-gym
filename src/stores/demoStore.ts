@@ -15,6 +15,22 @@ import type {
 } from '@/types/database';
 import { generateDemoDataset } from '@/services/demoDataService';
 
+export interface RegistrationSubmission {
+  id: string;
+  gym_id: string;
+  full_name: string;
+  phone: string;
+  email: string | null;
+  selected_plan_id: string;
+  gender: string | null;
+  date_of_birth: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  rejection_reason?: string | null;
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  created_at: string;
+}
+
 interface DemoState {
   members: DbMember[];
   memberships: DbMembership[];
@@ -27,6 +43,7 @@ interface DemoState {
   attendance: DbAttendance[];
   closures: DbGymClosure[];
   extensions: DbMembershipExtension[];
+  registrationSubmissions: RegistrationSubmission[];
   addMember: (member: DbMember) => void;
   addMembership: (membership: DbMembership) => void;
   updateMembership: (id: string, updates: Partial<DbMembership>) => void;
@@ -41,6 +58,8 @@ interface DemoState {
   revokeQrTokenByString: (tokenString: string, revokedBy: string) => void;
   addClosure: (closure: DbGymClosure) => void;
   addExtension: (extension: DbMembershipExtension) => void;
+  addRegistrationSubmission: (sub: RegistrationSubmission) => void;
+  updateRegistrationSubmission: (id: string, updates: Partial<RegistrationSubmission>) => void;
   resetToDefault: () => void;
   clearForLiveMode: () => void;
 }
@@ -61,6 +80,7 @@ export const useDemoStore = create<DemoState>()(
   attendance: initialData.attendance,
   closures: [],
   extensions: [],
+  registrationSubmissions: [],
 
   addMember: (member) =>
     set((state) => ({ members: [member, ...state.members] })),
@@ -128,6 +148,21 @@ export const useDemoStore = create<DemoState>()(
   addExtension: (extension) =>
     set((state) => ({ extensions: [extension, ...state.extensions] })),
 
+  addRegistrationSubmission: (sub) =>
+    set((state) => ({
+      registrationSubmissions: [
+        sub,
+        ...(state.registrationSubmissions || []).filter((s) => s.id !== sub.id),
+      ],
+    })),
+
+  updateRegistrationSubmission: (id, updates) =>
+    set((state) => ({
+      registrationSubmissions: (state.registrationSubmissions || []).map((s) =>
+        s.id === id ? { ...s, ...updates } : s
+      ),
+    })),
+
   resetToDefault: () => {
     const refreshed = generateDemoDataset();
     set({
@@ -142,6 +177,7 @@ export const useDemoStore = create<DemoState>()(
       attendance: refreshed.attendance,
       closures: [],
       extensions: [],
+      registrationSubmissions: [],
     });
   },
 
@@ -158,19 +194,20 @@ export const useDemoStore = create<DemoState>()(
       attendance: [],
       closures: [],
       extensions: [],
+      registrationSubmissions: [],
     });
   },
 }),
 {
   name: 'paradise_demo_store',
-  version: 2,
+  version: 3,
   migrate: (persistedState: unknown, version: number) => {
     const state = (persistedState || {}) as Record<string, unknown>;
     if (version < 2) {
-      return {
-        ...state,
-        plans: generateDemoDataset().plans,
-      };
+      state.plans = generateDemoDataset().plans;
+    }
+    if (version < 3) {
+      state.registrationSubmissions = state.registrationSubmissions || [];
     }
     return state;
   },

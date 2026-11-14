@@ -1,6 +1,7 @@
 import type { DbMember } from '@/types/database';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { useAuthStore } from '@/stores/authStore';
+import { useAuthStore, DEFAULT_GYM } from '@/stores/authStore';
+import { useDemoStore } from '@/stores/demoStore';
 import { memberService } from './memberService';
 import { membershipService } from './membershipService';
 import { generateMemberQrToken } from './qrService';
@@ -31,12 +32,14 @@ export interface SubmitRegistrationInput {
   dateOfBirth?: string | null;
 }
 
-// In-memory demo store for submissions
-let demoSubmissions: RegistrationSubmission[] = [];
-
 export const registrationService = {
   async submitRegistration(input: SubmitRegistrationInput): Promise<RegistrationSubmission> {
-    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured || input.gymId === 'demo-gym-001' || input.gymId.startsWith('demo-');
+    const isDemo =
+      useAuthStore.getState().isDemoMode ||
+      !isSupabaseConfigured ||
+      input.gymId === 'demo-gym-001' ||
+      input.gymId.startsWith('demo-') ||
+      input.gymId === DEFAULT_GYM.id;
     const cleanPhone = input.phone.trim();
 
     // Check duplicate phone in existing members
@@ -45,8 +48,9 @@ export const registrationService = {
       throw new Error('A member with this mobile number is already registered.');
     }
 
-    // Check duplicate in pending submissions
-    if (demoSubmissions.some((s) => s.phone === cleanPhone && s.status === 'pending')) {
+    // Check duplicate in pending submissions (from persisted store)
+    const storeSubmissions = useDemoStore.getState().registrationSubmissions || [];
+    if (storeSubmissions.some((s) => s.phone === cleanPhone && s.status === 'pending')) {
       throw new Error('A registration request with this mobile number has already been submitted or registered.');
     }
 
@@ -65,69 +69,111 @@ export const registrationService = {
     };
 
     if (isDemo) {
-      demoSubmissions.push(submission);
+      useDemoStore.getState().addRegistrationSubmission(submission);
       return submission;
     }
 
-    const { data, error } = await supabase
-      .from('registration_submissions')
-      .insert({
-        gym_id: submission.gym_id,
-        full_name: submission.full_name,
-        phone: submission.phone,
-        email: submission.email,
-        notes: JSON.stringify({ selected_plan_id: submission.selected_plan_id }),
-        gender: submission.gender,
-        date_of_birth: submission.date_of_birth,
-        status: submission.status,
-      })
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('registration_submissions')
+        .insert({
+          gym_id: submission.gym_id,
+          full_name: submission.full_name,
+          phone: submission.phone,
+          email: submission.email,
+          notes: JSON.stringify({ selected_plan_id: submission.selected_plan_id }),
+          gender: submission.gender,
+          date_of_birth: submission.date_of_birth,
+          status: submission.status,
+        })
+        .select()
+        .single();
 
-    if (error) throw error;
-    return {
-      ...(data as RegistrationSubmission),
-      selected_plan_id: submission.selected_plan_id,
-    };
+      if (!error && data) {
+        return {
+          ...(data as RegistrationSubmission),
+          selected_plan_id: submission.selected_plan_id,
+        };
+      }
+    } catch (err) {
+      console.warn('Supabase submission insert failed, fallback to local store:', err);
+    }
+
+    // Fallback store save so user request is never lost
+    useDemoStore.getState().addRegistrationSubmission(submission);
+    return submission;
   },
 
   async getPendingSubmissions(gymId: string): Promise<RegistrationSubmission[]> {
-    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured || gymId === 'demo-gym-001' || gymId.startsWith('demo-');
+    const isDemo =
+      useAuthStore.getState().isDemoMode ||
+      !isSupabaseConfigured ||
+      gymId === 'demo-gym-001' ||
+      gymId.startsWith('demo-') ||
+      gymId === DEFAULT_GYM.id;
+
+    // In demo or fallback mode, match submissions flexibly across demo gym IDs
+    const localPending = (useDemoStore.getState().registrationSubmissions || []).filter(
+      (s) =>
+        s.status === 'pending' &&
+        (s.gym_id === gymId ||
+          gymId === 'demo-gym-001' ||
+          gymId === DEFAULT_GYM.id ||
+          s.gym_id === 'demo-gym-001' ||
+          s.gym_id === DEFAULT_GYM.id)
+    );
 
     if (isDemo) {
-      return demoSubmissions.filter((s) => s.gym_id === gymId && s.status === 'pending');
+      return localPending;
     }
 
-    const { data, error } = await supabase
-      .from('registration_submissions')
-      .select('*')
-      .eq('gym_id', gymId)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('registration_submissions')
+        .select('*')
+        .eq('gym_id', gymId)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    return (data || []).map((row) => {
-      let selectedPlan = 'plan-monthly';
-      try {
-        const parsed = JSON.parse(row.notes || '{}');
-        if (parsed.selected_plan_id) selectedPlan = parsed.selected_plan_id;
-      } catch (_) {}
+      if (error) throw error;
+      const remote = (data || []).map((row) => {
+        let selectedPlan = 'plan-monthly';
+        try {
+          const parsed = JSON.parse(row.notes || '{}');
+          if (parsed.selected_plan_id) selectedPlan = parsed.selected_plan_id;
+        } catch (_) {}
 
-      return {
-        ...row,
-        selected_plan_id: selectedPlan,
-      } as RegistrationSubmission;
-    });
+        return {
+          ...row,
+          selected_plan_id: selectedPlan,
+        } as RegistrationSubmission;
+      });
+
+      // Combine remote and any local submissions without duplicate IDs
+      const combined = [...remote];
+      for (const loc of localPending) {
+        if (!combined.some((c) => c.id === loc.id || c.phone === loc.phone)) {
+          combined.push(loc);
+        }
+      }
+      return combined;
+    } catch (_) {
+      return localPending;
+    }
   },
 
   async approveSubmission(submissionId: string, partnerId: string): Promise<DbMember> {
-    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured || submissionId.startsWith('demo-');
+    const isDemo =
+      useAuthStore.getState().isDemoMode ||
+      !isSupabaseConfigured ||
+      submissionId.startsWith('demo-');
     const now = new Date().toISOString();
 
     let sub: RegistrationSubmission | undefined;
-    if (isDemo) {
-      sub = demoSubmissions.find((s) => s.id === submissionId);
-    } else {
+    const storeSubmissions = useDemoStore.getState().registrationSubmissions || [];
+    sub = storeSubmissions.find((s) => s.id === submissionId);
+
+    if (!sub && !isDemo) {
       const { data, error } = await supabase
         .from('registration_submissions')
         .select('*')
@@ -192,48 +238,54 @@ export const registrationService = {
     }
 
     // 4. Mark submission as approved
-    if (isDemo) {
-      sub.status = 'approved';
-      sub.reviewed_by = partnerId;
-      sub.reviewed_at = now;
-    } else {
-      await supabase
-        .from('registration_submissions')
-        .update({ status: 'approved', reviewed_by: partnerId, reviewed_at: now, member_id: newMember.id })
-        .eq('id', submissionId);
+    useDemoStore.getState().updateRegistrationSubmission(submissionId, {
+      status: 'approved',
+      reviewed_by: partnerId,
+      reviewed_at: now,
+    });
+
+    if (!isDemo && !submissionId.startsWith('demo-')) {
+      try {
+        await supabase
+          .from('registration_submissions')
+          .update({ status: 'approved', reviewed_by: partnerId, reviewed_at: now, member_id: newMember.id })
+          .eq('id', submissionId);
+      } catch (_) {}
     }
 
     return newMember;
   },
 
   async rejectSubmission(submissionId: string, partnerId: string, reason?: string): Promise<void> {
-    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured || submissionId.startsWith('demo-');
+    const isDemo =
+      useAuthStore.getState().isDemoMode ||
+      !isSupabaseConfigured ||
+      submissionId.startsWith('demo-');
     const now = new Date().toISOString();
 
-    if (isDemo) {
-      const sub = demoSubmissions.find((s) => s.id === submissionId);
-      if (!sub) throw new Error('Submission not found');
-      sub.status = 'rejected';
-      sub.reviewed_by = partnerId;
-      sub.reviewed_at = now;
-      sub.rejection_reason = reason || null;
-      return;
+    useDemoStore.getState().updateRegistrationSubmission(submissionId, {
+      status: 'rejected',
+      reviewed_by: partnerId,
+      reviewed_at: now,
+      rejection_reason: reason || null,
+    });
+
+    if (!isDemo && !submissionId.startsWith('demo-')) {
+      try {
+        await supabase
+          .from('registration_submissions')
+          .update({
+            status: 'rejected',
+            reviewed_by: partnerId,
+            reviewed_at: now,
+            rejection_reason: reason || null,
+          })
+          .eq('id', submissionId);
+      } catch (_) {}
     }
-
-    const { error } = await supabase
-      .from('registration_submissions')
-      .update({
-        status: 'rejected',
-        reviewed_by: partnerId,
-        reviewed_at: now,
-        rejection_reason: reason || null,
-      })
-      .eq('id', submissionId);
-
-    if (error) throw error;
   },
 
   _resetDemo() {
-    demoSubmissions = [];
+    useDemoStore.setState({ registrationSubmissions: [] });
   },
 };

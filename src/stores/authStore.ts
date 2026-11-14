@@ -36,6 +36,25 @@ async function resolvePartnerAndGym(user: {
   phone?: string | null;
   user_metadata?: Record<string, unknown>;
 }): Promise<{ partner: DbPartner; gym: DbGym }> {
+  // 1. Try automatic provisioning via SECURITY DEFINER RPC
+  try {
+    const { data: rpcData, error: rpcErr } = await supabase.rpc('ensure_partner_and_gym');
+    if (!rpcErr && rpcData?.partner && rpcData?.gym) {
+      return {
+        partner: rpcData.partner as DbPartner,
+        gym: {
+          ...DEFAULT_GYM,
+          ...(rpcData.gym as DbGym),
+          name: (rpcData.gym as DbGym).name || DEFAULT_GYM.name,
+          address: (rpcData.gym as DbGym).address || DEFAULT_GYM.address,
+          phone: (rpcData.gym as DbGym).phone || DEFAULT_GYM.phone,
+        },
+      };
+    }
+  } catch (err) {
+    console.warn('RPC ensure_partner_and_gym failed or not available:', err);
+  }
+
   let partner: DbPartner | null = null;
 
   try {
