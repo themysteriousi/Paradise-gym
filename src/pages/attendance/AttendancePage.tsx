@@ -41,9 +41,13 @@ export default function AttendancePage() {
   const [copiedLink, setCopiedLink] = useState(false);
   const wallPosterRef = useRef<HTMLDivElement>(null);
 
-  const checkInUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/?checkin=true&gym=${currentGym?.id || currentPartner?.gym_id || 'demo-gym-001'}`
-    : '';
+  const baseOrigin = typeof window !== 'undefined'
+    ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'https://paradise-gym-e3f.pages.dev'
+        : window.location.origin)
+    : 'https://paradise-gym-e3f.pages.dev';
+
+  const checkInUrl = `${baseOrigin}/?checkin=true&gym=${currentGym?.id || currentPartner?.gym_id || 'demo-gym-001'}`;
 
   useEffect(() => {
     if (checkInUrl) {

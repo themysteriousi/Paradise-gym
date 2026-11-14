@@ -23,9 +23,13 @@ export default function RegistrationQueuePage({ onBack, onMemberApproved }: Regi
   const [copied, setCopied] = useState(false);
   const qrPosterRef = useRef<HTMLDivElement>(null);
 
-  const registrationUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/?register=true&gym=${currentGym?.id || 'demo-gym-001'}`
-    : '';
+  const baseOrigin = typeof window !== 'undefined'
+    ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'https://paradise-gym-e3f.pages.dev'
+        : window.location.origin)
+    : 'https://paradise-gym-e3f.pages.dev';
+
+  const registrationUrl = `${baseOrigin}/?register=true&gym=${currentGym?.id || 'demo-gym-001'}`;
 
   useEffect(() => {
     if (registrationUrl) {
