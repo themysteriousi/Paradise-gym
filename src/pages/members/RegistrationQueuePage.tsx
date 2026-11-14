@@ -54,6 +54,8 @@ export default function RegistrationQueuePage({ onBack, onMemberApproved }: Regi
 
   useEffect(() => {
     fetchQueue();
+    const interval = setInterval(fetchQueue, 10000);
+    return () => clearInterval(interval);
   }, [fetchQueue]);
 
   const handleApprove = async (sub: RegistrationSubmission) => {

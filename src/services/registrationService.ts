@@ -114,7 +114,6 @@ export const registrationService = {
   },
 
   async getPendingSubmissions(gymId: string): Promise<RegistrationSubmission[]> {
-    const isExplicitDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
     const targetGymId = toValidGymUuid(gymId);
 
     // Local cached submissions
@@ -122,17 +121,26 @@ export const registrationService = {
       (s) => s.status === 'pending'
     );
 
-    if (isExplicitDemo) {
+    if (!isSupabaseConfigured) {
       return localPending;
     }
 
     try {
-      const { data, error } = await supabase
+      const timeoutPromise = new Promise<{ data: null; error: Error }>((_, reject) =>
+        setTimeout(() => reject(new Error('Queue query timeout')), 3500)
+      );
+
+      const queryPromise = supabase
         .from('registration_submissions')
         .select('*')
         .or(`gym_id.eq.${targetGymId},gym_id.eq.${DEFAULT_GYM.id}`)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
+
+      const { data, error } = (await Promise.race([queryPromise, timeoutPromise])) as {
+        data: any[] | null;
+        error: any;
+      };
 
       if (!error && data) {
         const remote: RegistrationSubmission[] = data.map((row) => {

@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/authStore';
 import {
   processMemberCheckIn,
   getTodaysAttendanceLog,
+  syncTodaysAttendanceFromCloud,
   type CheckInResult,
 } from '@/services/attendanceService';
 import { cardGeneratorService } from '@/services/cardGeneratorService';
@@ -54,6 +55,14 @@ export default function AttendancePage() {
       cardGeneratorService.generateQRCodeDataUrl(checkInUrl).then(setWallQrDataUrl);
     }
   }, [checkInUrl]);
+
+  useEffect(() => {
+    syncTodaysAttendanceFromCloud(currentGym?.id);
+    const interval = setInterval(() => {
+      syncTodaysAttendanceFromCloud(currentGym?.id);
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [currentGym?.id]);
 
   // Compute member lookup map
   const memberMap = useMemo(() => {

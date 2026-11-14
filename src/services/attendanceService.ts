@@ -1,9 +1,15 @@
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useDemoStore } from '@/stores/demoStore';
-import { useAuthStore } from '@/stores/authStore';
+import { DEFAULT_GYM } from '@/stores/authStore';
 import { validateQrToken } from './qrService';
 import { membershipService } from './membershipService';
-import type { DbAttendance, DbMember, AttendanceMethod } from '@/types/database';
+import type { DbAttendance, DbMember, DbMembership, AttendanceMethod } from '@/types/database';
+
+function toValidGymUuid(gymId?: string | null): string {
+  if (!gymId) return DEFAULT_GYM.id;
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(gymId);
+  return isUuid ? gymId : DEFAULT_GYM.id;
+}
 
 export interface ProcessCheckInInput {
   gym_id: string;
@@ -76,11 +82,6 @@ export function checkRecentCheckIn(
 export async function processMemberCheckIn(
   input: ProcessCheckInInput
 ): Promise<CheckInResult> {
-  const isDemoMode =
-    useAuthStore.getState().isDemoMode ||
-    !isSupabaseConfigured ||
-    input.gym_id === 'demo-gym-001' ||
-    input.gym_id.startsWith('demo-');
   let member: DbMember | undefined;
 
   // 1. Resolve Member
@@ -91,20 +92,35 @@ export async function processMemberCheckIn(
     }
     member = valRes.member;
   } else if (input.member_id) {
-    if (isDemoMode) {
-      member = useDemoStore
-        .getState()
-        .members.find((m) => m.id === input.member_id);
-    } else {
-      const { data, error } = await supabase
-        .from('members')
-        .select('*')
-        .eq('id', input.member_id)
-        .single();
-      if (error || !data) {
-        return { success: false, error: 'Member not found' };
-      }
-      member = data;
+    // Check local store first
+    member = useDemoStore
+      .getState()
+      .members.find((m) => m.id === input.member_id);
+
+    if (!member && isSupabaseConfigured) {
+      try {
+        const timeoutPromise = new Promise<{ data: null; error: Error }>((_, reject) =>
+          setTimeout(() => reject(new Error('Supabase member lookup timed out')), 3500)
+        );
+        const queryPromise = supabase
+          .from('members')
+          .select('*')
+          .eq('id', input.member_id)
+          .single();
+
+        const { data, error } = (await Promise.race([queryPromise, timeoutPromise])) as {
+          data: DbMember | null;
+          error: unknown;
+        };
+        if (!error && data) {
+          member = data;
+          useDemoStore.getState().addMember(data);
+        }
+      } catch (_) {}
+    }
+
+    if (!member) {
+      return { success: false, error: 'Member profile not found.' };
     }
   } else if (input.phone) {
     let cleanPhone = input.phone.trim().replace(/\D/g, '');
@@ -114,37 +130,140 @@ export async function processMemberCheckIn(
       cleanPhone = cleanPhone.slice(1);
     }
 
-    if (isDemoMode) {
-      member = useDemoStore
-        .getState()
-        .members.find((m) => {
-          const mPhone = m.phone.trim().replace(/\D/g, '');
-          return (
-            (mPhone === cleanPhone || mPhone.endsWith(cleanPhone) || cleanPhone.endsWith(mPhone)) &&
-            m.status !== 'archived'
-          );
+    // Try high-speed SECURITY DEFINER RPC first if Supabase is connected
+    if (isSupabaseConfigured && input.method === 'kiosk') {
+      try {
+        const rpcTargetGym = toValidGymUuid(input.gym_id);
+        const timeoutPromise = new Promise<{ data: null; error: Error }>((_, reject) =>
+          setTimeout(() => reject(new Error('RPC timeout')), 3500)
+        );
+        const rpcPromise = supabase.rpc('kiosk_check_in', {
+          p_gym_id: rpcTargetGym,
+          p_phone: cleanPhone,
         });
-      if (!member) {
+
+        const { data: rpcData, error: rpcError } = (await Promise.race([
+          rpcPromise,
+          timeoutPromise,
+        ])) as { data: any; error: any };
+
+        if (!rpcError && rpcData) {
+          if (rpcData.success) {
+            const memberObj: DbMember = {
+              id: rpcData.member.id,
+              gym_id: input.gym_id,
+              full_name: rpcData.member.full_name,
+              phone: rpcData.member.phone,
+              email: null,
+              date_of_birth: null,
+              gender: null,
+              address: null,
+              emergency_contact: null,
+              photo_url: null,
+              status: rpcData.member.status || 'active',
+              join_date: new Date().toISOString().slice(0, 10),
+              notes: null,
+              archived_at: null,
+              archived_by: null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            };
+
+            useDemoStore.getState().recordAttendance({
+              id: `att-cloud-${Date.now()}`,
+              gym_id: input.gym_id,
+              member_id: memberObj.id,
+              membership_id: 'cloud-membership',
+              method: 'kiosk',
+              checked_in_at: rpcData.checkedInAt || new Date().toISOString(),
+              checked_in_by: null,
+              device_id: null,
+              note: 'Wall QR Self-Checkin',
+              is_correction: false,
+              original_id: null,
+              corrected_by: null,
+              corrected_at: null,
+              correction_reason: null,
+            });
+
+            return {
+              success: true,
+              member: memberObj,
+              planName: rpcData.planName,
+              daysRemaining: rpcData.daysRemaining,
+              isDuplicateWarning: rpcData.isDuplicateWarning,
+            };
+          } else {
+            return {
+              success: false,
+              error: rpcData.error || 'Check-in failed.',
+            };
+          }
+        }
+      } catch (_) {
+        // Fallback to local and direct lookup below
+      }
+    }
+
+    // Step A: Check local store for any member with this phone
+    const localMember = useDemoStore.getState().members.find((m) => {
+      const mPhone = (m.phone || '').trim().replace(/\D/g, '');
+      return (
+        mPhone === cleanPhone ||
+        mPhone.endsWith(cleanPhone) ||
+        cleanPhone.endsWith(mPhone)
+      );
+    });
+
+    if (localMember) {
+      if (localMember.status === 'archived') {
         return {
           success: false,
-          error: `Member not found with mobile number ${cleanPhone}. Please register at the desk.`,
+          error: 'Your membership profile is currently archived / inactive. Please contact the front desk to reactivate your pass.',
         };
       }
-    } else {
-      const { data, error } = await supabase
-        .from('members')
-        .select('*')
-        .eq('gym_id', input.gym_id)
-        .eq('phone', cleanPhone)
-        .neq('status', 'archived')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      member = localMember;
+    }
 
-      if (error || !data) {
-        return { success: false, error: 'Member not found with this mobile number. Please register at the desk.' };
+    // Step B: If not in local store, query Supabase with safety timeout
+    if (!member && isSupabaseConfigured) {
+      try {
+        const timeoutPromise = new Promise<{ data: null; error: Error }>((_, reject) =>
+          setTimeout(() => reject(new Error('Supabase query timeout')), 3500)
+        );
+        const queryPromise = supabase
+          .from('members')
+          .select('*')
+          .eq('phone', cleanPhone)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        const { data, error } = (await Promise.race([queryPromise, timeoutPromise])) as {
+          data: DbMember | null;
+          error: unknown;
+        };
+
+        if (!error && data) {
+          if (data.status === 'archived') {
+            return {
+              success: false,
+              error: 'Your membership profile is currently archived / inactive. Please contact the front desk to reactivate your pass.',
+            };
+          }
+          member = data;
+          useDemoStore.getState().addMember(data);
+        }
+      } catch (err) {
+        console.warn('Supabase member lookup timed out or failed:', err);
       }
-      member = data;
+    }
+
+    if (!member) {
+      return {
+        success: false,
+        error: `Member not found with mobile number ${cleanPhone}. Please register at the desk.`,
+      };
     }
   }
 
@@ -152,21 +271,38 @@ export async function processMemberCheckIn(
     return { success: false, error: 'Member identity could not be verified' };
   }
 
+  if (member.status === 'archived') {
+    return {
+      success: false,
+      error: 'Your membership profile is currently archived / inactive. Please contact the front desk to reactivate your pass.',
+    };
+  }
+
   // 2. Check for rapid duplicate check-in (within 15 minutes)
   const recent = checkRecentCheckIn(member.id, 15);
   const isDuplicateWarning = recent.hasRecent;
 
   // 3. Status and Dues warnings based on real membership data
-  const activeMs = await membershipService.getMemberActiveMembership(member.id);
+  let activeMs: DbMembership | null = null;
+  try {
+    const msPromise = membershipService.getMemberActiveMembership(member.id);
+    const msTimeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+    activeMs = await Promise.race([msPromise, msTimeout]);
+  } catch (_) {
+    activeMs = null;
+  }
+
   const membershipId = activeMs?.id || null;
 
-  let planName = 'No Active Plan';
+  let planName = 'Active Member';
   let daysRemaining: number | undefined;
 
   if (activeMs) {
-    const plans = await membershipService.getPlans(input.gym_id);
-    const plan = plans.find((p) => p.id === activeMs.plan_id);
-    if (plan) planName = plan.name;
+    try {
+      const plans = await membershipService.getPlans(input.gym_id);
+      const plan = plans.find((p) => p.id === activeMs?.plan_id);
+      if (plan) planName = plan.name;
+    } catch (_) {}
 
     const expDate = new Date(activeMs.end_date);
     const diff = expDate.getTime() - Date.now();
@@ -175,7 +311,7 @@ export async function processMemberCheckIn(
 
   let statusWarning: string | undefined;
   if (!activeMs) {
-    statusWarning = 'No active membership plan on file.';
+    statusWarning = undefined;
   } else if (new Date(activeMs.end_date).getTime() < Date.now()) {
     statusWarning = `Membership expired on ${new Date(activeMs.end_date).toLocaleDateString('en-IN')}. Please renew.`;
   } else if (activeMs.status === 'paused') {
@@ -205,54 +341,42 @@ export async function processMemberCheckIn(
     correction_reason: null,
   };
 
-  if (isDemoMode) {
-    useDemoStore.getState().recordAttendance(attendanceRecord);
-    return {
-      success: true,
-      member,
-      attendanceRecord,
-      isDuplicateWarning,
-      statusWarning,
-      hasOutstandingDues,
-      planName,
-      daysRemaining,
-    };
+  // Always record locally so desk terminal updates instantly
+  useDemoStore.getState().recordAttendance(attendanceRecord);
+
+  // If Supabase is configured, record in Supabase in background
+  if (isSupabaseConfigured && !input.gym_id.startsWith('demo-')) {
+    void (async () => {
+      try {
+        const { error } = await supabase.from('attendance').insert({
+          gym_id: toValidGymUuid(input.gym_id),
+          member_id: member.id,
+          membership_id: membershipId && !membershipId.startsWith('demo-') ? membershipId : null,
+          method: input.method,
+          checked_in_at: now,
+          checked_in_by: input.checked_in_by || null,
+          device_id: input.device_id || null,
+          note: input.note || null,
+        });
+        if (error) {
+          console.warn('Supabase attendance insert error:', error.message || error);
+        }
+      } catch (err) {
+        console.warn('Supabase attendance insert exception:', err);
+      }
+    })();
   }
 
-  try {
-    const { data, error } = await supabase
-      .from('attendance')
-      .insert({
-        gym_id: input.gym_id,
-        member_id: member.id,
-        membership_id: membershipId,
-        method: input.method,
-        checked_in_at: now,
-        checked_in_by: input.checked_in_by || null,
-        device_id: input.device_id || null,
-        note: input.note || null,
-      })
-      .select('*')
-      .single();
-
-    if (error) throw error;
-
-    return {
-      success: true,
-      member,
-      attendanceRecord: data,
-      isDuplicateWarning,
-      statusWarning,
-      hasOutstandingDues,
-      planName,
-      daysRemaining,
-    };
-  } catch (err: unknown) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : 'Failed to record attendance',
-    };
-  }
+  return {
+    success: true,
+    member,
+    attendanceRecord,
+    isDuplicateWarning,
+    statusWarning,
+    hasOutstandingDues,
+    planName,
+    daysRemaining,
+  };
 }
 
 /**
@@ -273,5 +397,41 @@ export function getTodaysAttendanceLog(): DbAttendance[] {
       (a, b) =>
         new Date(b.checked_in_at).getTime() - new Date(a.checked_in_at).getTime()
     );
+}
+
+/**
+ * Sync today's attendance logs from Supabase cloud into local store
+ */
+export async function syncTodaysAttendanceFromCloud(gymId?: string): Promise<DbAttendance[]> {
+  if (!isSupabaseConfigured) return getTodaysAttendanceLog();
+
+  try {
+    const now = new Date();
+    const startOfDay = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    ).toISOString();
+
+    const targetGymId = toValidGymUuid(gymId);
+    const { data, error } = await supabase
+      .from('attendance')
+      .select('*')
+      .or(`gym_id.eq.${targetGymId},gym_id.eq.${DEFAULT_GYM.id}`)
+      .gte('checked_in_at', startOfDay)
+      .order('checked_in_at', { ascending: false });
+
+    if (!error && data) {
+      const store = useDemoStore.getState();
+      const map = new Map<string, DbAttendance>();
+      for (const a of store.attendance) map.set(a.id, a);
+      for (const a of data) map.set(a.id, a as DbAttendance);
+      useDemoStore.setState({ attendance: Array.from(map.values()) });
+    }
+  } catch (err) {
+    console.warn('Could not sync cloud attendance:', err);
+  }
+
+  return getTodaysAttendanceLog();
 }
 

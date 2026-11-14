@@ -44,12 +44,26 @@ export default function SelfCheckInPage({ gymId = 'demo-gym-001' }: SelfCheckInP
 
     try {
       setSubmitting(true);
-      const res = await processMemberCheckIn({
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(
+          () =>
+            reject(
+              new Error(
+                'Check-in request timed out. Please check your network or try again.'
+              )
+            ),
+          7000
+        )
+      );
+
+      const checkInPromise = processMemberCheckIn({
         gym_id: gymId,
         phone: cleanPhone,
         method: 'kiosk',
         note: 'Wall QR Self-Checkin',
       });
+
+      const res = await Promise.race([checkInPromise, timeoutPromise]);
 
       if (!res.success) {
         setErrorMsg(res.error || 'Check-in failed. Please verify your number.');
