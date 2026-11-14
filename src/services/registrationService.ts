@@ -32,31 +32,38 @@ export interface SubmitRegistrationInput {
   dateOfBirth?: string | null;
 }
 
+function toValidGymUuid(gymId?: string | null): string {
+  if (!gymId) return DEFAULT_GYM.id;
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(gymId);
+  return isUuid ? gymId : DEFAULT_GYM.id;
+}
+
 export const registrationService = {
   async submitRegistration(input: SubmitRegistrationInput): Promise<RegistrationSubmission> {
-    const isDemo =
-      useAuthStore.getState().isDemoMode ||
-      !isSupabaseConfigured ||
-      input.gymId === 'demo-gym-001' ||
-      input.gymId.startsWith('demo-') ||
-      input.gymId === DEFAULT_GYM.id;
+    const isExplicitDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
     const cleanPhone = input.phone.trim();
+    const targetGymId = toValidGymUuid(input.gymId);
 
-    // Check duplicate phone in existing members
-    const existingMembers = await memberService.getMembers({ gymId: input.gymId });
-    if (existingMembers.some((m) => m.phone === cleanPhone && m.status !== 'archived')) {
-      throw new Error('A member with this mobile number is already registered.');
+    // Check duplicate phone in existing members if possible
+    try {
+      const existingMembers = await memberService.getMembers({ gymId: input.gymId });
+      if (existingMembers.some((m) => m.phone === cleanPhone && m.status !== 'archived')) {
+        throw new Error('A member with this mobile number is already registered.');
+      }
+    } catch (err) {
+      if (err instanceof Error && err.message.includes('already registered')) throw err;
     }
 
-    // Check duplicate in pending submissions (from persisted store)
+    // Check duplicate in local store
     const storeSubmissions = useDemoStore.getState().registrationSubmissions || [];
     if (storeSubmissions.some((s) => s.phone === cleanPhone && s.status === 'pending')) {
       throw new Error('A registration request with this mobile number has already been submitted or registered.');
     }
 
     const now = new Date().toISOString();
+    const submissionId = crypto.randomUUID();
     const submission: RegistrationSubmission = {
-      id: isDemo ? `demo-sub-${Date.now()}` : crypto.randomUUID(),
+      id: submissionId,
       gym_id: input.gymId,
       full_name: input.fullName.trim(),
       phone: cleanPhone,
@@ -68,62 +75,54 @@ export const registrationService = {
       created_at: now,
     };
 
-    if (isDemo) {
-      useDemoStore.getState().addRegistrationSubmission(submission);
-      return submission;
-    }
+    // If Supabase is configured and not in explicit demo mode, insert directly into database
+    // CRITICAL: We do NOT call .select() here because PostgreSQL RLS allows anon to INSERT but forbids anon SELECT,
+    // which would cause "new row violates row-level security policy for table registration_submissions"
+    if (isSupabaseConfigured && !isExplicitDemo) {
+      try {
+        const { error } = await supabase
+          .from('registration_submissions')
+          .insert({
+            id: submissionId,
+            gym_id: targetGymId,
+            full_name: submission.full_name,
+            phone: submission.phone,
+            email: submission.email,
+            notes: JSON.stringify({ selected_plan_id: submission.selected_plan_id }),
+            gender: submission.gender,
+            date_of_birth: submission.date_of_birth,
+            status: submission.status,
+          });
 
-    try {
-      const { data, error } = await supabase
-        .from('registration_submissions')
-        .insert({
-          gym_id: submission.gym_id,
-          full_name: submission.full_name,
-          phone: submission.phone,
-          email: submission.email,
-          notes: JSON.stringify({ selected_plan_id: submission.selected_plan_id }),
-          gender: submission.gender,
-          date_of_birth: submission.date_of_birth,
-          status: submission.status,
-        })
-        .select()
-        .single();
-
-      if (!error && data) {
-        return {
-          ...(data as RegistrationSubmission),
-          selected_plan_id: submission.selected_plan_id,
-        };
+        if (error) {
+          console.warn('Supabase submission insert returned error:', error);
+          if (error.code === '23505') {
+            throw new Error('A registration request with these details has already been submitted.');
+          }
+        }
+      } catch (insertErr) {
+        if (insertErr instanceof Error && insertErr.message.includes('already been submitted')) {
+          throw insertErr;
+        }
+        console.warn('Insert to Supabase registration_submissions failed, saving locally:', insertErr);
       }
-    } catch (err) {
-      console.warn('Supabase submission insert failed, fallback to local store:', err);
     }
 
-    // Fallback store save so user request is never lost
+    // Always cache in local store on this device as well
     useDemoStore.getState().addRegistrationSubmission(submission);
     return submission;
   },
 
   async getPendingSubmissions(gymId: string): Promise<RegistrationSubmission[]> {
-    const isDemo =
-      useAuthStore.getState().isDemoMode ||
-      !isSupabaseConfigured ||
-      gymId === 'demo-gym-001' ||
-      gymId.startsWith('demo-') ||
-      gymId === DEFAULT_GYM.id;
+    const isExplicitDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
+    const targetGymId = toValidGymUuid(gymId);
 
-    // In demo or fallback mode, match submissions flexibly across demo gym IDs
+    // Local cached submissions
     const localPending = (useDemoStore.getState().registrationSubmissions || []).filter(
-      (s) =>
-        s.status === 'pending' &&
-        (s.gym_id === gymId ||
-          gymId === 'demo-gym-001' ||
-          gymId === DEFAULT_GYM.id ||
-          s.gym_id === 'demo-gym-001' ||
-          s.gym_id === DEFAULT_GYM.id)
+      (s) => s.status === 'pending'
     );
 
-    if (isDemo) {
+    if (isExplicitDemo) {
       return localPending;
     }
 
@@ -131,63 +130,63 @@ export const registrationService = {
       const { data, error } = await supabase
         .from('registration_submissions')
         .select('*')
-        .eq('gym_id', gymId)
+        .or(`gym_id.eq.${targetGymId},gym_id.eq.${DEFAULT_GYM.id}`)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      const remote = (data || []).map((row) => {
-        let selectedPlan = 'plan-monthly';
-        try {
-          const parsed = JSON.parse(row.notes || '{}');
-          if (parsed.selected_plan_id) selectedPlan = parsed.selected_plan_id;
-        } catch (_) {}
+      if (!error && data) {
+        const remote: RegistrationSubmission[] = data.map((row) => {
+          let selectedPlan = 'plan-monthly';
+          try {
+            const parsed = JSON.parse(row.notes || '{}');
+            if (parsed.selected_plan_id) selectedPlan = parsed.selected_plan_id;
+          } catch (_) {}
 
-        return {
-          ...row,
-          selected_plan_id: selectedPlan,
-        } as RegistrationSubmission;
-      });
+          return {
+            ...row,
+            selected_plan_id: selectedPlan,
+          } as RegistrationSubmission;
+        });
 
-      // Combine remote and any local submissions without duplicate IDs
-      const combined = [...remote];
-      for (const loc of localPending) {
-        if (!combined.some((c) => c.id === loc.id || c.phone === loc.phone)) {
-          combined.push(loc);
+        // Merge remote with any local pending submissions without duplicates
+        const map = new Map<string, RegistrationSubmission>();
+        for (const r of remote) map.set(r.id, r);
+        for (const l of localPending) {
+          if (!map.has(l.id)) map.set(l.id, l);
         }
+        return Array.from(map.values());
       }
-      return combined;
-    } catch (_) {
-      return localPending;
+    } catch (err) {
+      console.warn('Error reading pending submissions from Supabase:', err);
     }
+
+    return localPending;
   },
 
   async approveSubmission(submissionId: string, partnerId: string): Promise<DbMember> {
-    const isDemo =
-      useAuthStore.getState().isDemoMode ||
-      !isSupabaseConfigured ||
-      submissionId.startsWith('demo-');
     const now = new Date().toISOString();
 
     let sub: RegistrationSubmission | undefined;
     const storeSubmissions = useDemoStore.getState().registrationSubmissions || [];
     sub = storeSubmissions.find((s) => s.id === submissionId);
 
-    if (!sub && !isDemo) {
-      const { data, error } = await supabase
-        .from('registration_submissions')
-        .select('*')
-        .eq('id', submissionId)
-        .single();
-      if (error) throw error;
-
-      let selectedPlan = 'plan-monthly';
+    if (!sub && isSupabaseConfigured) {
       try {
-        const parsed = JSON.parse(data.notes || '{}');
-        if (parsed.selected_plan_id) selectedPlan = parsed.selected_plan_id;
-      } catch (_) {}
+        const { data, error } = await supabase
+          .from('registration_submissions')
+          .select('*')
+          .eq('id', submissionId)
+          .maybeSingle();
 
-      sub = { ...data, selected_plan_id: selectedPlan } as RegistrationSubmission;
+        if (!error && data) {
+          let selectedPlan = 'plan-monthly';
+          try {
+            const parsed = JSON.parse(data.notes || '{}');
+            if (parsed.selected_plan_id) selectedPlan = parsed.selected_plan_id;
+          } catch (_) {}
+          sub = { ...data, selected_plan_id: selectedPlan } as RegistrationSubmission;
+        }
+      } catch (_) {}
     }
 
     if (!sub) throw new Error('Submission not found');
@@ -244,7 +243,7 @@ export const registrationService = {
       reviewed_at: now,
     });
 
-    if (!isDemo && !submissionId.startsWith('demo-')) {
+    if (isSupabaseConfigured && !submissionId.startsWith('demo-')) {
       try {
         await supabase
           .from('registration_submissions')
