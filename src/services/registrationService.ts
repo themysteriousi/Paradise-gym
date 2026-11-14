@@ -36,7 +36,7 @@ let demoSubmissions: RegistrationSubmission[] = [];
 
 export const registrationService = {
   async submitRegistration(input: SubmitRegistrationInput): Promise<RegistrationSubmission> {
-    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
+    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured || input.gymId === 'demo-gym-001' || input.gymId.startsWith('demo-');
     const cleanPhone = input.phone.trim();
 
     // Check duplicate phone in existing members
@@ -92,7 +92,7 @@ export const registrationService = {
   },
 
   async getPendingSubmissions(gymId: string): Promise<RegistrationSubmission[]> {
-    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
+    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured || gymId === 'demo-gym-001' || gymId.startsWith('demo-');
 
     if (isDemo) {
       return demoSubmissions.filter((s) => s.gym_id === gymId && s.status === 'pending');
@@ -121,7 +121,7 @@ export const registrationService = {
   },
 
   async approveSubmission(submissionId: string, partnerId: string): Promise<DbMember> {
-    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
+    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured || submissionId.startsWith('demo-');
     const now = new Date().toISOString();
 
     let sub: RegistrationSubmission | undefined;
@@ -207,7 +207,7 @@ export const registrationService = {
   },
 
   async rejectSubmission(submissionId: string, partnerId: string, reason?: string): Promise<void> {
-    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
+    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured || submissionId.startsWith('demo-');
     const now = new Date().toISOString();
 
     if (isDemo) {

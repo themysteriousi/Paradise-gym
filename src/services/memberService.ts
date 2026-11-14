@@ -37,7 +37,7 @@ export interface UpdateMemberInput {
 
 export const memberService = {
   async getMembers(options: GetMembersOptions): Promise<DbMember[]> {
-    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
+    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured || options.gymId === 'demo-gym-001' || options.gymId.startsWith('demo-');
 
     if (isDemo) {
       let list = useDemoStore.getState().members.filter((m) => m.gym_id === options.gymId);
@@ -87,7 +87,7 @@ export const memberService = {
   },
 
   async getMemberById(id: string): Promise<DbMember | null> {
-    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
+    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured || id.startsWith('demo-');
 
     if (isDemo) {
       return useDemoStore.getState().members.find((m) => m.id === id) || null;
@@ -108,7 +108,7 @@ export const memberService = {
   },
 
   async createMember(input: CreateMemberInput): Promise<DbMember> {
-    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
+    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured || input.gymId === 'demo-gym-001' || input.gymId.startsWith('demo-');
     const now = new Date().toISOString();
     const today = now.slice(0, 10);
 
@@ -179,7 +179,7 @@ export const memberService = {
   },
 
   async updateMember(id: string, input: UpdateMemberInput): Promise<DbMember> {
-    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
+    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured || id.startsWith('demo-');
     const now = new Date().toISOString();
 
     if (isDemo) {
@@ -240,7 +240,7 @@ export const memberService = {
     const now = new Date().toISOString();
     await this.updateMember(id, { status: 'archived' });
 
-    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
+    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured || id.startsWith('demo-');
     if (isDemo) {
       const store = useDemoStore.getState();
       const updatedList = store.members.map((m) =>

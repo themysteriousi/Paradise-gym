@@ -85,7 +85,7 @@ export const membershipService = {
   },
 
   async createMembership(input: CreateMembershipInput): Promise<DbMembership> {
-    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured;
+    const isDemo = useAuthStore.getState().isDemoMode || !isSupabaseConfigured || input.gymId === 'demo-gym-001' || input.gymId.startsWith('demo-');
     const now = new Date().toISOString();
     const expiry = this.calculateExpiryDate(input.startDate, input.durationDays);
 
