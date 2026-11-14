@@ -68,6 +68,12 @@ export default function MemberDetailPage({ memberId, onBack }: MemberDetailPageP
     await loadMember();
   };
 
+  const handleUnarchive = async () => {
+    if (!member) return;
+    await memberService.updateMember(member.id, { status: 'active' });
+    await loadMember();
+  };
+
   if (loading) {
     return (
       <div className="p-8 text-center text-slate-400 text-xs font-mono">
@@ -124,7 +130,15 @@ export default function MemberDetailPage({ memberId, onBack }: MemberDetailPageP
           <ArrowLeft className="w-4 h-4" />
           <span>All Members</span>
         </button>
-        {!isArchived && (
+        {isArchived ? (
+          <button
+            onClick={handleUnarchive}
+            className="flex items-center space-x-1 px-2.5 py-1 text-[11px] font-medium text-emerald-400 hover:bg-emerald-500/10 rounded-md border border-emerald-500/20 transition"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Restore to Active</span>
+          </button>
+        ) : (
           <button
             onClick={handleArchive}
             className="flex items-center space-x-1 px-2.5 py-1 text-[11px] font-medium text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-md border border-white/[0.08] transition"
