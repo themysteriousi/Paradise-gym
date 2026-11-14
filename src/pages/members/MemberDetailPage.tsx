@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, Phone, Calendar, Clock, Archive, QrCode, RefreshCw, Plus, IndianRupee } from 'lucide-react';
+import { ArrowLeft, Phone, Calendar, Clock, Archive, QrCode, RefreshCw, Plus, IndianRupee, Edit2 } from 'lucide-react';
 import type { DbMember, DbMembership, DbMembershipPlan, DbPayment } from '@/types/database';
 import { memberService } from '@/services/memberService';
 import { membershipService } from '@/services/membershipService';
@@ -7,6 +7,7 @@ import { getPayments } from '@/services/paymentService';
 import { useAuthStore } from '@/stores/authStore';
 import RenewalModal from '@/components/memberships/RenewalModal';
 import DigitalCard from '@/components/members/DigitalCard';
+import MemberFormModal from '@/components/members/MemberFormModal';
 
 interface MemberDetailPageProps {
   memberId: string;
@@ -21,6 +22,7 @@ export default function MemberDetailPage({ memberId, onBack }: MemberDetailPageP
   const [loading, setLoading] = useState(true);
   const [isRenewalOpen, setIsRenewalOpen] = useState(false);
   const [isCardOpen, setIsCardOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const currentPartner = useAuthStore((s) => s.currentPartner);
   const currentGym = useAuthStore((s) => s.currentGym);
 
@@ -159,9 +161,19 @@ export default function MemberDetailPage({ memberId, onBack }: MemberDetailPageP
               <span>{member.phone}</span>
             </div>
           </div>
-          <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono capitalize tracking-wide ${statusBadgeStyle}`}>
-            {statusLabel}
-          </span>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setIsEditOpen(true)}
+              className="flex items-center space-x-1 px-2.5 py-1 text-[11px] font-medium text-zinc-300 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] rounded-md border border-white/[0.08] transition"
+              title="Edit member details"
+            >
+              <Edit2 className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Edit</span>
+            </button>
+            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono capitalize tracking-wide ${statusBadgeStyle}`}>
+              {statusLabel}
+            </span>
+          </div>
         </div>
 
         {/* Info Grid */}
@@ -308,6 +320,13 @@ export default function MemberDetailPage({ memberId, onBack }: MemberDetailPageP
         }
         isOpen={isCardOpen}
         onClose={() => setIsCardOpen(false)}
+      />
+
+      <MemberFormModal
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        onMemberCreated={loadMember}
+        memberToEdit={member}
       />
     </div>
   );

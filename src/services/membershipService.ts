@@ -2,6 +2,7 @@ import type { DbMembership, DbMembershipPlan } from '@/types/database';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/authStore';
 import { useDemoStore } from '@/stores/demoStore';
+import { generateDemoDataset } from '@/services/demoDataService';
 
 export interface CreateMembershipInput {
   gymId: string;
@@ -30,6 +31,15 @@ export const membershipService = {
   },
 
   async getPlans(gymId: string): Promise<DbMembershipPlan[]> {
+    const getOrHydrateDemoPlans = () => {
+      let demoPlans = useDemoStore.getState().plans;
+      if (!demoPlans || demoPlans.length === 0) {
+        demoPlans = generateDemoDataset().plans;
+        useDemoStore.setState({ plans: demoPlans });
+      }
+      return demoPlans;
+    };
+
     const isDemo =
       useAuthStore.getState().isDemoMode ||
       !isSupabaseConfigured ||
@@ -37,7 +47,7 @@ export const membershipService = {
       gymId.startsWith('demo-');
 
     if (isDemo) {
-      const demoPlans = useDemoStore.getState().plans;
+      const demoPlans = getOrHydrateDemoPlans();
       const matched = demoPlans.filter((p) => p.gym_id === gymId);
       if (matched.length > 0) return matched;
       return demoPlans.map((p) => ({ ...p, gym_id: gymId }));
@@ -57,7 +67,7 @@ export const membershipService = {
       }
 
       // If no plans in DB yet for this gym, auto-seed default standard plans
-      const defaultPlansToSeed = useDemoStore.getState().plans.map((p) => ({
+      const defaultPlansToSeed = getOrHydrateDemoPlans().map((p) => ({
         gym_id: gymId,
         name: p.name,
         description: p.description,
@@ -81,7 +91,7 @@ export const membershipService = {
       console.warn('Could not fetch or seed Supabase membership_plans, falling back to default plans:', err);
     }
 
-    return useDemoStore.getState().plans.map((p) => ({ ...p, gym_id: gymId }));
+    return getOrHydrateDemoPlans().map((p) => ({ ...p, gym_id: gymId }));
   },
 
   async createMembership(input: CreateMembershipInput): Promise<DbMembership> {

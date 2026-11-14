@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { X, RefreshCw, CheckCircle2 } from 'lucide-react';
 import type { DbMember, DbMembershipPlan, DbMembership, PaymentMethod } from '@/types/database';
 import { membershipService } from '@/services/membershipService';
 import { recordPayment } from '@/services/paymentService';
 import { useAuthStore } from '@/stores/authStore';
+import { generateDemoDataset } from '@/services/demoDataService';
 
 interface RenewalModalProps {
   member: DbMember;
@@ -25,16 +26,33 @@ export default function RenewalModal({ member, isOpen, onClose, onRenewed }: Ren
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    if (!currentGym || !isOpen) return;
-    membershipService.getPlans(currentGym.id).then((p) => {
-      setPlans(p);
-      if (p.length > 0) setSelectedPlanId((prev) => (prev ? prev : p[0].id));
+    if (!isOpen) return;
+    const gymId = currentGym?.id || currentPartner?.gym_id || 'demo-gym-001';
+    membershipService.getPlans(gymId).then((p) => {
+      const availablePlans = p && p.length > 0 ? p : generateDemoDataset().plans;
+      setPlans(availablePlans);
+      if (availablePlans.length > 0) {
+        setSelectedPlanId((prev) =>
+          prev && availablePlans.some((pl) => pl.id === prev) ? prev : availablePlans[0].id
+        );
+      }
     });
 
     membershipService.getMemberActiveMembership(member.id).then((ms) => {
       setActiveMembership(ms);
     });
-  }, [currentGym, member.id, isOpen]);
+  }, [currentGym, currentPartner?.gym_id, member.id, isOpen]);
+
+  const offerPlans = useMemo(() => {
+    return plans.filter((p) =>
+      (p.id && p.id.includes('offer')) ||
+      (p.name && (p.name.toLowerCase().includes('offer') || p.name.toLowerCase().includes('diwali')))
+    );
+  }, [plans]);
+
+  const regularPlans = useMemo(() => {
+    return plans.filter((p) => !offerPlans.some((o) => o.id === p.id));
+  }, [plans, offerPlans]);
 
   if (!isOpen) return null;
 
@@ -132,24 +150,29 @@ export default function RenewalModal({ member, isOpen, onClose, onRenewed }: Ren
               onChange={(e) => setSelectedPlanId(e.target.value)}
               className="w-full px-3 py-2 bg-[#0d0f12] border border-white/[0.08] rounded-lg text-xs text-zinc-100 focus:outline-none focus:border-amber-400/50"
             >
-              <optgroup label="💥 Special Diwali & Opening Offer">
-                {plans
-                  .filter((p) => p.id.includes('offer'))
-                  .map((p) => (
+              {offerPlans.length > 0 && (
+                <optgroup label="💥 Special Diwali & Opening Offer">
+                  {offerPlans.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name} — ₹{(p.price_paise / 100).toLocaleString('en-IN')} ({p.duration_days} days)
                     </option>
                   ))}
-              </optgroup>
-              <optgroup label="Standard Regular Rates">
-                {plans
-                  .filter((p) => !p.id.includes('offer'))
-                  .map((p) => (
+                </optgroup>
+              )}
+              {regularPlans.length > 0 && (
+                <optgroup label="Standard Regular Rates">
+                  {regularPlans.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name} — ₹{(p.price_paise / 100).toLocaleString('en-IN')} ({p.duration_days} days)
                     </option>
                   ))}
-              </optgroup>
+                </optgroup>
+              )}
+              {offerPlans.length === 0 && regularPlans.length === 0 && plans.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} — ₹{(p.price_paise / 100).toLocaleString('en-IN')} ({p.duration_days} days)
+                </option>
+              ))}
             </select>
           </div>
 
